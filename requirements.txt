@@ -1,18 +1,21 @@
 # Core ML Libraries
-torch>=2.4.0
-transformers>=4.51.3
+torch>=2.4.0  #Pip install torch>=2.4.0
+transformers>=4.51.3 #Pip install transformers>=4.51.3
 
 # Hugging Face
-huggingface_hub
-accelerate
+huggingface_hub #Pip install huggingface_hub
+accelerate #Pip install accelerate
 
 # Vision Processing  
-timm
+timm #Pip install timm
 
 #backend
-fastapi
-uvicorn
-python-multipart
+fastapi #Pip install fastapi
+uvicorn #Pip install uvicorn
+python-multipart #Pip install python-multipart
 
 #audio
-librosa
+librosa #Pip install librosa
+
+#opencv
+opencv-python #Pip install opencv-python
