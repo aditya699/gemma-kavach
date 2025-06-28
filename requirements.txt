@@ -8,3 +8,11 @@ accelerate
 
 # Vision Processing  
 timm
+
+#backend
+fastapi
+uvicorn
+python-multipart
+
+#audio
+librosa
