@@ -1,0 +1,29 @@
+{
+  "event_id": "7e6fa4f3",
+  "verdict": "ALERT",
+  "risk_score_percent": 80.0,
+  "yes_count": 4,
+  "total_frames": 5,
+  "flagged_frames": [
+    {
+      "frame": "frame_00.jpg",
+      "timestamp": "00:00",
+      "response": "Yes"
+    },
+    {
+      "frame": "frame_01.jpg",
+      "timestamp": "00:01",
+      "response": "Yes"
+    },
+    {
+      "frame": "frame_02.jpg",
+      "timestamp": "00:02",
+      "response": "Yes"
+    },
+    {
+      "frame": "frame_03.jpg",
+      "timestamp": "00:03",
+      "response": "Yes"
+    }
+  ]
+}

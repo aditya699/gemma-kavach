@@ -1,0 +1,35 @@
+{
+  "event_id": "8aa99ce1",
+  "verdict": "ALERT",
+  "risk_score_percent": 100.0,
+  "yes_count": 5,
+  "total_frames": 5,
+  "error_count": 0,
+  "flagged_frames": [
+    {
+      "frame": "frame_00.jpg",
+      "timestamp": "00:00",
+      "response": "Yes"
+    },
+    {
+      "frame": "frame_01.jpg",
+      "timestamp": "00:01",
+      "response": "Yes"
+    },
+    {
+      "frame": "frame_02.jpg",
+      "timestamp": "00:02",
+      "response": "Yes"
+    },
+    {
+      "frame": "frame_03.jpg",
+      "timestamp": "00:03",
+      "response": "Yes"
+    },
+    {
+      "frame": "frame_04.jpg",
+      "timestamp": "00:04",
+      "response": "Yes"
+    }
+  ]
+}
