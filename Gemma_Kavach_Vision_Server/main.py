@@ -1,6 +1,7 @@
 # main.py - Gemma Kavach Vision Server
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from routes import router  # Import our routes
 
 # Create FastAPI app
@@ -21,6 +22,9 @@ app.add_middleware(
 
 # Include monitoring routes
 app.include_router(router, prefix="/api/v1")  # All routes will be /api/v1/...
+
+# Serve static files (frontend)
+app.mount("/", StaticFiles(directory="static", html=True), name="static")
 
 # Basic test endpoint
 @app.get("/")

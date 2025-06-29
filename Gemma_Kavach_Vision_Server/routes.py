@@ -1,11 +1,14 @@
 # routes.py - API endpoints for crowd monitoring
-from fastapi import APIRouter, HTTPException, UploadFile, File
+from fastapi import APIRouter, HTTPException, UploadFile, File, BackgroundTasks
 from pydantic import BaseModel
 from typing import Optional
 import aiohttp
 from utils import (
     save_session_to_gcs, 
     load_session_from_gcs,
+    save_flagged_image_to_gcs,
+    should_send_alert,
+    send_alert_email,
     generate_session_id, 
     get_current_timestamp,
     get_verdict,
@@ -116,7 +119,7 @@ async def create_session(request: CreateSessionRequest):
         raise HTTPException(status_code=500, detail=f"Failed to create session: {str(e)}")
 
 @router.post("/session/{session_id}/frame", response_model=FrameAnalysisResponse)
-async def analyze_frame(session_id: str, frame: UploadFile = File(...)):
+async def analyze_frame(session_id: str, background_tasks: BackgroundTasks, frame: UploadFile = File(...)):
     """
     Analyze a single frame for crowd risk
     Frontend sends one image at a time to this endpoint
@@ -153,6 +156,20 @@ async def analyze_frame(session_id: str, frame: UploadFile = File(...)):
         session_data["frames_analyzed"] = frame_number
         if risk_detected:
             session_data["frames_flagged"] += 1
+            
+            # Save flagged image to GCS
+            image_gcs_path = save_flagged_image_to_gcs(session_id, frame_number, image_content)
+            
+            # Add flagged frame info to session
+            if "flagged_frames" not in session_data:
+                session_data["flagged_frames"] = []
+                
+            session_data["flagged_frames"].append({
+                "frame_number": frame_number,
+                "gcs_path": image_gcs_path,
+                "timestamp": get_current_timestamp(),
+                "analysis_result": gemma_response
+            })
         
         # Calculate risk score (percentage of flagged frames)
         risk_score = (session_data["frames_flagged"] / frame_number) * 100
@@ -163,6 +180,15 @@ async def analyze_frame(session_id: str, frame: UploadFile = File(...)):
         save_success = save_session_to_gcs(session_id, session_data)
         if not save_success:
             print("⚠️ Failed to save session update")
+        
+        # Check if we should send alert email (background task)
+        if should_send_alert(session_data):
+            print(f"🚨 Alert criteria met! Sending email in background...")
+            session_data["email_sent"] = True
+            # Update session again to mark email as sent
+            save_session_to_gcs(session_id, session_data)
+            # Send email in background (non-blocking)
+            background_tasks.add_task(send_alert_email, session_id, session_data)
         
         print(f"📊 Frame {frame_number}: {'🔴 RISK' if risk_detected else '🟢 SAFE'}")
         print(f"📈 Risk Score: {risk_score}% ({session_data['frames_flagged']}/{frame_number})")

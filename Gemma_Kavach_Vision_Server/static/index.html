@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemma Kavach - Crowd Safety Monitor</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-shield-alt"></i>
+                <h1>Gemma Kavach</h1>
+                <span class="subtitle">AI-Powered Crowd Safety Monitor</span>
+            </div>
+            <div class="status-indicator" id="connectionStatus">
+                <i class="fas fa-circle"></i>
+                <span>Connecting...</span>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Left Panel - Camera -->
+            <div class="camera-panel">
+                <div class="camera-container">
+                    <video id="videoElement" autoplay muted playsinline></video>
+                    <canvas id="captureCanvas" style="display: none;"></canvas>
+                    <div class="camera-overlay" id="cameraOverlay">
+                        <div class="overlay-content">
+                            <i class="fas fa-video"></i>
+                            <p>Click "Start Monitoring" to begin</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="camera-controls">
+                    <button id="startBtn" class="btn btn-primary">
+                        <i class="fas fa-play"></i>
+                        Start Monitoring
+                    </button>
+                    <button id="stopBtn" class="btn btn-secondary" disabled>
+                        <i class="fas fa-stop"></i>
+                        Stop Monitoring
+                    </button>
+                </div>
+
+                <div class="session-config">
+                    <div class="input-group">
+                        <label for="locationInput">Location:</label>
+                        <input type="text" id="locationInput" value="Mela Zone B" placeholder="Enter location">
+                    </div>
+                    <div class="input-group">
+                        <label for="operatorInput">Operator:</label>
+                        <input type="text" id="operatorInput" value="Security Team" placeholder="Enter operator name">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel - Dashboard -->
+            <div class="dashboard-panel">
+                <!-- Risk Meter -->
+                <div class="widget risk-widget">
+                    <h3><i class="fas fa-exclamation-triangle"></i> Risk Assessment</h3>
+                    <div class="risk-meter">
+                        <div class="risk-circle">
+                            <div class="risk-value" id="riskValue">0%</div>
+                            <div class="risk-label" id="riskLabel">SAFE</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Session Stats -->
+                <div class="widget stats-widget">
+                    <h3><i class="fas fa-chart-bar"></i> Session Statistics</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value" id="framesAnalyzed">0</div>
+                            <div class="stat-label">Frames Analyzed</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="framesFlagged">0</div>
+                            <div class="stat-label">Frames Flagged</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="sessionTime">00:00</div>
+                            <div class="stat-label">Session Time</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="lastAnalysis">-</div>
+                            <div class="stat-label">Last Analysis</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Session Info -->
+                <div class="widget session-widget">
+                    <h3><i class="fas fa-info-circle"></i> Session Details</h3>
+                    <div class="session-info">
+                        <div class="info-row">
+                            <span class="info-label">Session ID:</span>
+                            <span class="info-value" id="sessionId">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Location:</span>
+                            <span class="info-value" id="sessionLocation">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Status:</span>
+                            <span class="info-value" id="sessionStatus">Not Started</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activity Log -->
+                <div class="widget log-widget">
+                    <h3><i class="fas fa-list"></i> Activity Log</h3>
+                    <div class="activity-log" id="activityLog">
+                        <div class="log-item">
+                            <span class="log-time">Ready</span>
+                            <span class="log-message">System initialized</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Modal -->
+    <div class="modal" id="loadingModal">
+        <div class="modal-content">
+            <div class="spinner"></div>
+            <p>Analyzing frame...</p>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
