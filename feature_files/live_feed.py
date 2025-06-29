@@ -8,6 +8,7 @@ import aiohttp
 import smtplib
 import imageio
 import time
+import platform
 from PIL import Image, ImageDraw
 from email.message import EmailMessage
 from dotenv import load_dotenv
@@ -17,9 +18,14 @@ load_dotenv()
 # ------------------ CONFIG ------------------
 API_URL            = "https://nsl6up9ztcem6h-8000.proxy.runpod.net/ask_image"
 PROMPT             = (
-    "Analyze this image carefully. Do you see any signs of a stampede or crowd panic — "
-    "such as people tightly packed, pushing, running, falling, or any chaos in the scene? "
-    "Reply 'Yes' if any such signs are visible. Otherwise, reply 'No' only."
+    "Analyze this image for signs of crowd danger or stampede conditions. "
+    "Look for these critical indicators: "
+    "1) Extremely dense crowds with people pressed together "
+    "2) People falling, being pushed, or trampled "
+    "3) Panic behaviors like running or desperate movement "
+    "4) Visible distress, fear, or chaos in the crowd "
+    "5) Bottlenecks or dangerous crowd flow patterns "
+    "Respond with 'Yes' if ANY dangerous conditions are detected, otherwise respond with 'No'."
 )
 TEMP_DIR           = "stream_frames"
 ALERT_DIR          = "alerts"
@@ -28,11 +34,63 @@ EMAIL_PASSWORD     = os.getenv("GOOGLE_APP_PASSWORD")
 EMAIL_RECEIVER     = "ab0358031@gmail.com"
 MAX_CONCURRENT     = 3  # Lower for real-time processing
 FRAME_INTERVAL     = 1  # seconds between captures
-FRAME_LIMIT        = 8 # Stop after N frames (or use ESC to exit)
+FRAME_LIMIT        = 10 # Stop after N frames (or use ESC to exit)
+
+# Sound alert settings
+ENABLE_SOUND_ALERTS = True
+SOUND_ALERT_COOLDOWN = 2  # seconds between repeated alerts
+
+# Location settings
+MONITORING_LOCATION = "Mela Zone B"  # Change this to your monitoring location
 # --------------------------------------------
 
 os.makedirs(TEMP_DIR, exist_ok=True)
 os.makedirs(ALERT_DIR, exist_ok=True)
+
+def play_alert_sound(alert_type="risk"):
+    """Cross-platform sound alert function."""
+    if not ENABLE_SOUND_ALERTS:
+        return
+    
+    try:
+        system = platform.system().lower()
+        
+        if alert_type == "risk":
+            # Single beep for individual frame risk
+            if system == "windows":
+                import winsound
+                winsound.Beep(1000, 300)  # 1000Hz for 300ms
+            elif system == "darwin":  # macOS
+                os.system('afplay /System/Library/Sounds/Ping.aiff')
+            else:  # Linux and others
+                os.system('beep -f 1000 -l 300 2>/dev/null || echo -e "\a"')
+                
+        elif alert_type == "alert":
+            # Multiple beeps for high-risk verdict
+            if system == "windows":
+                import winsound
+                for _ in range(3):
+                    winsound.Beep(1200, 200)
+                    time.sleep(0.1)
+            elif system == "darwin":  # macOS
+                for _ in range(3):
+                    os.system('afplay /System/Library/Sounds/Sosumi.aiff')
+                    time.sleep(0.2)
+            else:  # Linux and others
+                os.system('beep -f 1200 -l 200 -r 3 2>/dev/null || (echo -e "\a"; sleep 0.2; echo -e "\a"; sleep 0.2; echo -e "\a")')
+                
+        elif alert_type == "watch":
+            # Softer beep for watch status
+            if system == "windows":
+                import winsound
+                winsound.Beep(800, 200)
+            elif system == "darwin":  # macOS
+                os.system('afplay /System/Library/Sounds/Tink.aiff')
+            else:  # Linux and others
+                os.system('beep -f 800 -l 200 2>/dev/null || echo -e "\a"')
+                
+    except Exception as e:
+        print(f"⚠️ Sound alert error: {e}")
 
 def get_verdict(score_percent: float) -> str:
     """Map risk percentage to verdict."""
@@ -90,17 +148,20 @@ def send_email(event_id, result, frame_dir):
         return
         
     msg = EmailMessage()
-    msg["Subject"] = f"🚨 ALERT: Crowd Panic Detected (Event {event_id})"
+    msg["Subject"] = f"🚨 ALERT: Crowd Panic Detected at {MONITORING_LOCATION} (Event {event_id})"
     msg["From"]    = EMAIL_SENDER
     msg["To"]      = EMAIL_RECEIVER
 
     # Build email body
     lines = [
+        f"🚨 CROWD SAFETY ALERT 🚨",
+        f"Location: {MONITORING_LOCATION}",
         f"Event ID: {event_id}",
         f"Verdict: {result['verdict']}",
         f"Risk Score: {result['risk_score_percent']}%",
         f"Total Frames Analyzed: {result['total_frames']}",
         f"Flagged Frames: {result['yes_count']}",
+        f"Time: {result['timestamp']}",
         "",
         "Flagged Frame Details:",
     ]
@@ -168,6 +229,7 @@ def process_results(flagged_frames, total_frames, event_id):
 
     result = {
         "event_id": event_id,
+        "location": MONITORING_LOCATION,
         "verdict": verdict,
         "risk_score_percent": score_percent,
         "yes_count": yes_count,
@@ -175,6 +237,14 @@ def process_results(flagged_frames, total_frames, event_id):
         "flagged_frames": flagged_frames,
         "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
     }
+
+    # Play sound alert based on verdict
+    if verdict == "ALERT":
+        print("🔊 Playing HIGH RISK alert sound...")
+        play_alert_sound("alert")
+    elif verdict == "WATCH":
+        print("🔊 Playing WATCH alert sound...")
+        play_alert_sound("watch")
 
     # Save flagged frames and generate reports
     if flagged_frames:
@@ -199,13 +269,16 @@ async def main():
     flagged_frames = []
     frame_count = 0
     last_capture = time.time()
+    last_sound_alert = 0  # Track last sound alert time for cooldown
     
     # Create semaphore and session for API calls
     semaphore = asyncio.Semaphore(MAX_CONCURRENT)
     timeout = aiohttp.ClientTimeout(total=10)  # Shorter timeout for real-time
     
     print(f"📹 Starting Real-time Crowd Monitor (Event ID: {event_id})")
+    print(f"📍 Location: {MONITORING_LOCATION}")
     print(f"📸 Capturing every {FRAME_INTERVAL} seconds, max {FRAME_LIMIT} frames")
+    print(f"🔊 Sound alerts: {'ENABLED' if ENABLE_SOUND_ALERTS else 'DISABLED'}")
     print("⌨️  Press ESC to exit early.\n")
     
     cap = cv2.VideoCapture(0)
@@ -258,6 +331,14 @@ async def main():
                                     "response": "Yes"
                                 })
                                 print(f"🚨 Frame {timestamp} flagged as risky!")
+                                
+                                # Play immediate sound alert with cooldown
+                                current_time = time.time()
+                                if current_time - last_sound_alert >= SOUND_ALERT_COOLDOWN:
+                                    print("🔊 Playing risk detection beep...")
+                                    play_alert_sound("risk")
+                                    last_sound_alert = current_time
+                                    
                         except Exception as e:
                             print(f"❌ Task error for {timestamp}: {e}")
                 
@@ -266,11 +347,18 @@ async def main():
                     pending_tasks.pop(i)
                 
                 # Display live feed with status overlay
-                status_text = f"Event: {event_id} | Frames: {frame_count}/{FRAME_LIMIT} | Flagged: {len(flagged_frames)}"
-                cv2.putText(frame, status_text, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+                status_text = f"Location: {MONITORING_LOCATION} | Event: {event_id}"
+                cv2.putText(frame, status_text, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+                
+                frame_status = f"Frames: {frame_count}/{FRAME_LIMIT} | Flagged: {len(flagged_frames)}"
+                cv2.putText(frame, frame_status, (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
                 
                 if flagged_frames:
-                    cv2.putText(frame, "⚠️ RISK DETECTED", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
+                    cv2.putText(frame, "⚠️ RISK DETECTED", (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
+                
+                # Add sound status indicator
+                sound_status = "🔊 ON" if ENABLE_SOUND_ALERTS else "🔇 OFF"
+                cv2.putText(frame, f"Sound: {sound_status}", (10, 120), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 0), 2)
                 
                 cv2.imshow("Live Crowd Monitor", frame)
                 
@@ -309,6 +397,7 @@ async def main():
     print("\n" + "="*50)
     print("📊 FINAL CROWD ANALYSIS REPORT")
     print("="*50)
+    print(f"Location: {MONITORING_LOCATION}")
     print(f"Event ID: {event_id}")
     print(f"Verdict: {result['verdict']}")
     print(f"Risk Score: {result['risk_score_percent']}%")
