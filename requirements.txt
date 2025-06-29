@@ -21,3 +21,11 @@ librosa #pip install librosa
 opencv-python #pip install opencv-python
 pillow #pip install pillow
 imageio #pip install imageio
+
+#google cloud
+google-cloud-storage
+
+#dotenv
+python-dotenv 
+
+aiohttp
