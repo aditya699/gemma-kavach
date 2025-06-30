@@ -24,8 +24,8 @@ EMAIL_PASSWORD = os.getenv("GOOGLE_APP_PASSWORD")  # Set this in environment
 EMAIL_RECEIVER = "ab0358031@gmail.com"
 
 # Alert thresholds
-MIN_FRAMES_FOR_ALERT = 3
-RISK_THRESHOLD_FOR_ALERT = 75.0
+MIN_FRAMES_FOR_ALERT = 5
+RISK_THRESHOLD_FOR_ALERT = 60.0
 
 # Initialize GCS client (singleton pattern)
 _storage_client = None
