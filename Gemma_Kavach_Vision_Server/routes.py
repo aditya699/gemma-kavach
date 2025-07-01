@@ -1,8 +1,9 @@
-# routes.py - API endpoints for crowd monitoring
+# routes.py - Improved API endpoints with dual crowd analysis
 from fastapi import APIRouter, HTTPException, UploadFile, File, BackgroundTasks
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, Dict, Any
 import aiohttp
+import asyncio
 from utils import (
     save_session_to_gcs, 
     load_session_from_gcs,
@@ -13,6 +14,7 @@ from utils import (
     get_current_timestamp,
     get_verdict,
     check_gcs_connection,
+    calculate_risk_score,
     BUCKET_NAME,
     SESSIONS_PREFIX
 )
@@ -21,26 +23,46 @@ from utils import (
 router = APIRouter()
 
 # Gemma server configuration
-GEMMA_API_URL = "https://nsl6up9ztcem6h-8000.proxy.runpod.net/ask_image"
-CROWD_ANALYSIS_PROMPT = (
-    "Carefully examine the image for any signs of crowd danger or stampede risk. "
-    "Look specifically for the following indicators:\n"
-    "1) Extremely dense crowds or people tightly packed together\n"
-    "2) Individuals falling, being pushed, or trampled\n"
-    "3) Panic behaviors such as running, shoving, or erratic movement\n"
-    "4) Visible signs of fear, distress, or chaos\n"
-    "5) Bottlenecks or unsafe crowd flow patterns\n\n"
-    "Respond with only one word: 'Yes' if ANY signs of danger are present, or 'No' if none are detected. "
-    "Do not explain your answer."
+GEMMA_API_URL = "https://9pj4mh13aoyid2-8000.proxy.runpod.net/ask_image"
+# Improved analysis prompts
+CROWD_DENSITY_PROMPT = (
+    "Analyze this image and determine the crowd density level. "
+    "Look at how tightly packed people are together:\n"
+    "- Low: People have plenty of space, sparse crowd\n"
+    "- Medium: Moderate crowding, some personal space\n"
+    "- High: Very dense, people tightly packed with minimal space\n\n"
+    "Respond with only one word: 'Low', 'Medium', or 'High'."
 )
 
+CROWD_MOTION_PROMPT = (
+    "Analyze this image for signs of panic behavior or chaotic crowd movement. "
+    "Look for:\n"
+    "- People running, pushing, or shoving\n"
+    "- Panic expressions or body language\n"
+    "- Chaotic, disorganized movement patterns\n"
+    "- People falling or being trampled\n"
+    "- Any signs of fear or distress\n\n"
+    "Respond with only one word: 'Calm' if no panic signs, or 'Chaotic' if panic behavior detected."
+)
 
-# Request model for creating session
+# Enhanced response models
+class FrameAnalysisResponse(BaseModel):
+    session_id: str
+    frame_number: int
+    crowd_density: str  # "Low", "Medium", "High"
+    crowd_motion: str   # "Calm", "Chaotic"
+    risk_detected: bool
+    risk_level: str     # "SAFE", "MODERATE", "HIGH", "CRITICAL"
+    updated_risk_score: float
+    frames_analyzed: int
+    frames_flagged: int
+    timestamp: str
+    analysis_details: Dict[str, Any]
+
 class CreateSessionRequest(BaseModel):
-    location: str = "Mela Zone B"  # Default location
+    location: str = "Mela Zone B"
     operator_name: Optional[str] = "Security Team"
 
-# Response model for session creation
 class SessionResponse(BaseModel):
     session_id: str
     status: str
@@ -48,18 +70,6 @@ class SessionResponse(BaseModel):
     timestamp: str
     message: str
 
-# Response model for frame analysis
-class FrameAnalysisResponse(BaseModel):
-    session_id: str
-    frame_number: int
-    analysis_result: str  # "Yes" or "No"
-    risk_detected: bool
-    updated_risk_score: float
-    frames_analyzed: int
-    frames_flagged: int
-    timestamp: str
-
-# Response model for session status
 class SessionStatusResponse(BaseModel):
     session_id: str
     location: str
@@ -70,20 +80,82 @@ class SessionStatusResponse(BaseModel):
     frames_analyzed: int
     frames_flagged: int
     risk_score: float
-    verdict: str  # "SAFE", "WATCH", "ALERT"
+    verdict: str
+    analysis_breakdown: Optional[Dict[str, Any]]
+
+async def analyze_frame_dual(image_content: bytes, filename: str) -> Dict[str, str]:
+    """
+    Perform dual analysis on a single frame using async calls
+    Returns: {"density": "Low/Medium/High", "motion": "Calm/Chaotic"}
+    """
+    async def call_gemma_api(prompt: str, session: aiohttp.ClientSession) -> str:
+        """Make a single API call to Gemma"""
+        try:
+            data = aiohttp.FormData()
+            data.add_field('image', image_content, filename=filename, content_type='image/jpeg')
+            data.add_field('prompt', prompt)
+            
+            async with session.post(GEMMA_API_URL, data=data) as response:
+                if response.status != 200:
+                    raise Exception(f"Gemma API error: {response.status}")
+                
+                result = await response.json()
+                return result.get("text", "").strip()
+                
+        except Exception as e:
+            print(f"❌ Gemma API call failed: {e}")
+            return "Unknown"
+    
+    # Make both API calls concurrently
+    async with aiohttp.ClientSession() as session:
+        density_task = call_gemma_api(CROWD_DENSITY_PROMPT, session)
+        motion_task = call_gemma_api(CROWD_MOTION_PROMPT, session)
+        
+        # Wait for both results
+        density_result, motion_result = await asyncio.gather(density_task, motion_task)
+        
+        # Clean and validate results
+        density = density_result.title() if density_result.lower() in ['low', 'medium', 'high'] else 'Unknown'
+        motion = motion_result.title() if motion_result.lower() in ['calm', 'chaotic'] else 'Unknown'
+        
+        return {
+            "density": density,
+            "motion": motion
+        }
+
+def determine_risk_level(density: str, motion: str) -> tuple[bool, str]:
+    """
+    Determine risk based on crowd density and motion
+    Returns: (risk_detected: bool, risk_level: str)
+    """
+    # Risk matrix logic
+    if motion == "Chaotic":
+        if density == "High":
+            return True, "CRITICAL"  # High density + chaos = maximum danger
+        elif density == "Medium":
+            return True, "HIGH"      # Medium density + chaos = high danger
+        else:  # Low density
+            return True, "MODERATE"  # Even low density chaos is concerning
+    
+    elif density == "High":
+        if motion == "Calm":
+            return True, "MODERATE"  # High density but calm = watch closely
+        else:  # Unknown motion
+            return True, "MODERATE"  # High density with unknown motion
+    
+    elif density == "Medium":
+        return False, "SAFE"         # Medium density + calm = safe
+    
+    else:  # Low density or Unknown
+        return False, "SAFE"         # Low density = safe
 
 @router.post("/session/create", response_model=SessionResponse)
 async def create_session(request: CreateSessionRequest):
-    """
-    Create a new crowd monitoring session
-    Frontend calls this first before sending frames
-    """
+    """Create a new crowd monitoring session"""
     try:
-        # Generate unique session ID and timestamp
         session_id = generate_session_id()
         timestamp = get_current_timestamp()
         
-        # Create session data
         session_data = {
             "session_id": session_id,
             "location": request.location,
@@ -93,12 +165,15 @@ async def create_session(request: CreateSessionRequest):
             "frames_analyzed": 0,
             "frames_flagged": 0,
             "risk_score": 0.0,
+            "analysis_breakdown": {
+                "density_stats": {"Low": 0, "Medium": 0, "High": 0, "Unknown": 0},
+                "motion_stats": {"Calm": 0, "Chaotic": 0, "Unknown": 0},
+                "risk_levels": {"SAFE": 0, "MODERATE": 0, "HIGH": 0, "CRITICAL": 0}
+            },
             "gcs_path": f"gs://{BUCKET_NAME}/{SESSIONS_PREFIX}{session_id}.json"
         }
         
-        # Save session to GCS
         success = save_session_to_gcs(session_id, session_data)
-        
         if not success:
             raise Exception("Failed to save session to cloud storage")
         
@@ -111,7 +186,7 @@ async def create_session(request: CreateSessionRequest):
             status="created",
             location=request.location,
             timestamp=timestamp,
-            message=f"Session created successfully. Saved to cloud storage."
+            message="Session created successfully with dual-analysis capability."
         )
         
     except Exception as e:
@@ -121,8 +196,7 @@ async def create_session(request: CreateSessionRequest):
 @router.post("/session/{session_id}/frame", response_model=FrameAnalysisResponse)
 async def analyze_frame(session_id: str, background_tasks: BackgroundTasks, frame: UploadFile = File(...)):
     """
-    Analyze a single frame for crowd risk
-    Frontend sends one image at a time to this endpoint
+    Analyze a single frame using dual crowd analysis (density + motion)
     """
     try:
         # Load existing session
@@ -132,35 +206,44 @@ async def analyze_frame(session_id: str, background_tasks: BackgroundTasks, fram
         
         print(f"🧠 Analyzing frame for session: {session_id}")
         
-        # Prepare image for Gemma API
+        # Prepare image for analysis
         image_content = await frame.read()
-        
-        # Call Gemma API
-        async with aiohttp.ClientSession() as session:
-            data = aiohttp.FormData()
-            data.add_field('image', image_content, filename=frame.filename, content_type=frame.content_type)
-            data.add_field('prompt', CROWD_ANALYSIS_PROMPT)
-            
-            async with session.post(GEMMA_API_URL, data=data) as response:
-                if response.status != 200:
-                    raise Exception(f"Gemma API error: {response.status}")
-                
-                result = await response.json()
-                gemma_response = result.get("text", "").strip().lower()
-        
-        # Process analysis result
-        risk_detected = gemma_response == "yes"
         frame_number = session_data["frames_analyzed"] + 1
         
-        # Update session data
+        # Perform dual analysis (async)
+        analysis_start = asyncio.get_event_loop().time()
+        analysis_results = await analyze_frame_dual(image_content, frame.filename)
+        analysis_time = round(asyncio.get_event_loop().time() - analysis_start, 2)
+        
+        density = analysis_results["density"]
+        motion = analysis_results["motion"]
+        
+        # Determine risk
+        risk_detected, risk_level = determine_risk_level(density, motion)
+        
+        # Update session statistics
         session_data["frames_analyzed"] = frame_number
+        
+        # Update breakdown stats
+        breakdown = session_data.get("analysis_breakdown", {
+            "density_stats": {"Low": 0, "Medium": 0, "High": 0, "Unknown": 0},
+            "motion_stats": {"Calm": 0, "Chaotic": 0, "Unknown": 0},
+            "risk_levels": {"SAFE": 0, "MODERATE": 0, "HIGH": 0, "CRITICAL": 0}
+        })
+        
+        breakdown["density_stats"][density] += 1
+        breakdown["motion_stats"][motion] += 1
+        breakdown["risk_levels"][risk_level] += 1
+        session_data["analysis_breakdown"] = breakdown
+        
+        # Handle flagged frames
         if risk_detected:
             session_data["frames_flagged"] += 1
             
             # Save flagged image to GCS
             image_gcs_path = save_flagged_image_to_gcs(session_id, frame_number, image_content)
             
-            # Add flagged frame info to session
+            # Add detailed flagged frame info
             if "flagged_frames" not in session_data:
                 session_data["flagged_frames"] = []
                 
@@ -168,12 +251,15 @@ async def analyze_frame(session_id: str, background_tasks: BackgroundTasks, fram
                 "frame_number": frame_number,
                 "gcs_path": image_gcs_path,
                 "timestamp": get_current_timestamp(),
-                "analysis_result": gemma_response
+                "crowd_density": density,
+                "crowd_motion": motion,
+                "risk_level": risk_level,
+                "analysis_time_seconds": analysis_time
             })
         
-        # Calculate risk score (percentage of flagged frames)
-        risk_score = (session_data["frames_flagged"] / frame_number) * 100
-        session_data["risk_score"] = round(risk_score, 2)
+        # Calculate enhanced risk score
+        risk_score = calculate_risk_score(session_data)
+        session_data["risk_score"] = risk_score
         session_data["last_analysis"] = get_current_timestamp()
         
         # Save updated session
@@ -181,27 +267,36 @@ async def analyze_frame(session_id: str, background_tasks: BackgroundTasks, fram
         if not save_success:
             print("⚠️ Failed to save session update")
         
-        # Check if we should send alert email (background task)
+        # Check for alert (background task)
         if should_send_alert(session_data):
             print(f"🚨 Alert criteria met! Sending email in background...")
             session_data["email_sent"] = True
-            # Update session again to mark email as sent
             save_session_to_gcs(session_id, session_data)
-            # Send email in background (non-blocking)
             background_tasks.add_task(send_alert_email, session_id, session_data)
         
-        print(f"📊 Frame {frame_number}: {'🔴 RISK' if risk_detected else '🟢 SAFE'}")
-        print(f"📈 Risk Score: {risk_score}% ({session_data['frames_flagged']}/{frame_number})")
+        # Log analysis results
+        risk_emoji = "🔴" if risk_level == "CRITICAL" else "🟠" if risk_level == "HIGH" else "🟡" if risk_level == "MODERATE" else "🟢"
+        print(f"📊 Frame {frame_number}: {risk_emoji} {risk_level}")
+        print(f"   Density: {density} | Motion: {motion}")
+        print(f"   Risk Score: {risk_score}% | Time: {analysis_time}s")
         
         return FrameAnalysisResponse(
             session_id=session_id,
             frame_number=frame_number,
-            analysis_result=gemma_response,
+            crowd_density=density,
+            crowd_motion=motion,
             risk_detected=risk_detected,
+            risk_level=risk_level,
             updated_risk_score=risk_score,
             frames_analyzed=frame_number,
             frames_flagged=session_data["frames_flagged"],
-            timestamp=get_current_timestamp()
+            timestamp=get_current_timestamp(),
+            analysis_details={
+                "analysis_time_seconds": analysis_time,
+                "density_breakdown": breakdown["density_stats"],
+                "motion_breakdown": breakdown["motion_stats"],
+                "risk_level_breakdown": breakdown["risk_levels"]
+            }
         )
         
     except HTTPException:
@@ -212,17 +307,12 @@ async def analyze_frame(session_id: str, background_tasks: BackgroundTasks, fram
 
 @router.get("/session/{session_id}", response_model=SessionStatusResponse)
 async def get_session_status(session_id: str):
-    """
-    Get current status and details of a monitoring session
-    Frontend can call this to show real-time updates
-    """
+    """Get current status and detailed analytics of a monitoring session"""
     try:
-        # Load session data from GCS
         session_data = load_session_from_gcs(session_id)
         if not session_data:
             raise HTTPException(status_code=404, detail=f"Session {session_id} not found")
         
-        # Calculate verdict based on risk score
         risk_score = session_data.get("risk_score", 0.0)
         verdict = get_verdict(risk_score)
         
@@ -238,7 +328,8 @@ async def get_session_status(session_id: str):
             frames_analyzed=session_data["frames_analyzed"],
             frames_flagged=session_data["frames_flagged"],
             risk_score=risk_score,
-            verdict=verdict
+            verdict=verdict,
+            analysis_breakdown=session_data.get("analysis_breakdown")
         )
         
     except HTTPException:
@@ -247,7 +338,6 @@ async def get_session_status(session_id: str):
         print(f"❌ Error getting session status: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to get session status: {str(e)}")
 
-# Health check for routes
 @router.get("/monitoring/status")
 async def monitoring_status():
     """Check if monitoring service is available"""
@@ -256,6 +346,8 @@ async def monitoring_status():
     return {
         "service": "monitoring",
         "status": "available",
+        "analysis_type": "dual_crowd_analysis",
+        "features": ["crowd_density_detection", "panic_behavior_detection", "async_api_calls"],
         "gcs": gcs_info,
         "gemma_api": GEMMA_API_URL,
         "endpoints": ["/session/create", "/session/{id}/frame", "/session/{id}"]

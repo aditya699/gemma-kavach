@@ -2,7 +2,7 @@ import requests
 import json
 
 # Your working Runpod server URL
-SERVER_URL = "https://xln0ug8mnka0z8-8000.proxy.runpod.net/"
+SERVER_URL = "https://tacudpffh27p0d-8000.proxy.runpod.net/"
 
 def test_image_processing():
     """Test image + text processing"""

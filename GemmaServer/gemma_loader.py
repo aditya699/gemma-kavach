@@ -2,12 +2,15 @@
 import torch
 from transformers import AutoProcessor, AutoModelForImageTextToText
 from huggingface_hub import login
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 def get_model_and_processor():
     """Load Gemma 3n model and processor for multimodal support"""
     
     # Login to HuggingFace 
-    login(token="please get it from portal")
+    login(token=os.getenv("HF_TOKEN"))
     
     print("🚀 Loading Gemma 3n model and processor...")
     

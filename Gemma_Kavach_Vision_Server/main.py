@@ -21,10 +21,19 @@ app.add_middleware(
 )
 
 # Include monitoring routes
-app.include_router(router, prefix="/api/v1")  # All routes will be /api/v1/...
+app.include_router(router, prefix="/api")  # All routes will be /api/v1/...
+
+from pathlib import Path
+
+BASE_DIR   = Path(__file__).resolve().parent        # folder where main.py lives
+STATIC_DIR = BASE_DIR / "static"                    # …/static (absolute path)
 
 # Serve static files (frontend)
-app.mount("/", StaticFiles(directory="static", html=True), name="static")
+app.mount(
+    "/",                  # leave it on root
+    StaticFiles(directory=STATIC_DIR, html=True),
+    name="static"
+)
 
 # Basic test endpoint
 @app.get("/")
@@ -44,12 +53,12 @@ async def health_check():
 if __name__ == "__main__":
     import uvicorn
     print("🚀 Starting Gemma Kavach Vision Server...")
-    print("📍 Server will run on: http://localhost:8081")
-    print("📖 API docs will be available at: http://localhost:8081/docs")
+    print("📍 Server will run on: http://localhost:38277")
+    print("📖 API docs will be available at: http://localhost:38277/docs")
     
     uvicorn.run(
         app, 
         host="0.0.0.0",  # Listen on all interfaces
-        port=8081,       # Using 8081 instead of 8080 (Windows permission issue)
+        port=38277,       # Using 38277 instead of 8080 (Windows permission issue)
         reload=True      # Auto-reload when code changes
     )

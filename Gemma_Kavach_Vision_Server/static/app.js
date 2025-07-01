@@ -1,4 +1,4 @@
-// Gemma Kavach Frontend JavaScript
+// Enhanced Gemma Kavach Frontend JavaScript - Dual Analysis Support
 
 class GemmaKavach {
     constructor() {
@@ -7,6 +7,13 @@ class GemmaKavach {
         this.captureInterval = null;
         this.sessionStartTime = null;
         this.frameCount = 0;
+        
+        // Enhanced analytics tracking
+        this.analytics = {
+            densityStats: {"Low": 0, "Medium": 0, "High": 0, "Unknown": 0},
+            motionStats: {"Calm": 0, "Chaotic": 0, "Unknown": 0},
+            riskLevels: {"SAFE": 0, "MODERATE": 0, "HIGH": 0, "CRITICAL": 0}
+        };
         
         this.videoElement = document.getElementById('videoElement');
         this.canvas = document.getElementById('captureCanvas');
@@ -37,7 +44,22 @@ class GemmaKavach {
             sessionId: document.getElementById('sessionId'),
             sessionLocation: document.getElementById('sessionLocation'),
             sessionStatus: document.getElementById('sessionStatus'),
-            activityLog: document.getElementById('activityLog')
+            activityLog: document.getElementById('activityLog'),
+            
+            // NEW: Enhanced analysis display elements
+            currentDensity: document.getElementById('currentDensity'),
+            currentMotion: document.getElementById('currentMotion'),
+            riskLevel: document.getElementById('riskLevel'),
+            analysisTime: document.getElementById('analysisTime'),
+            
+            // NEW: Analytics breakdown elements
+            densityChart: document.getElementById('densityChart'),
+            motionChart: document.getElementById('motionChart'),
+            riskLevelChart: document.getElementById('riskLevelChart'),
+            
+            // NEW: Alert indicators
+            alertIndicator: document.getElementById('alertIndicator'),
+            criticalFramesCount: document.getElementById('criticalFramesCount')
         };
     }
     
@@ -48,12 +70,12 @@ class GemmaKavach {
     
     async checkServerConnection() {
         try {
-            const response = await fetch('/api/v1/monitoring/status');
+            const response = await fetch('/api/monitoring/status');
             const data = await response.json();
             
             if (data.status === 'available') {
-                this.updateConnectionStatus(true);
-                this.addLogEntry('System ready for monitoring');
+                this.updateConnectionStatus(true, data.analysis_type || 'dual_crowd_analysis');
+                this.addLogEntry('System ready for dual crowd analysis');
             } else {
                 this.updateConnectionStatus(false);
             }
@@ -63,11 +85,14 @@ class GemmaKavach {
         }
     }
     
-    updateConnectionStatus(connected) {
+    updateConnectionStatus(connected, analysisType = null) {
         const statusEl = this.elements.connectionStatus;
         if (connected) {
             statusEl.className = 'status-indicator connected';
-            statusEl.innerHTML = '<i class="fas fa-circle"></i><span>Connected</span>';
+            statusEl.innerHTML = `<i class="fas fa-circle"></i><span>Connected</span>`;
+            if (analysisType) {
+                statusEl.title = `Analysis Type: ${analysisType}`;
+            }
         } else {
             statusEl.className = 'status-indicator disconnected';
             statusEl.innerHTML = '<i class="fas fa-circle"></i><span>Disconnected</span>';
@@ -76,28 +101,25 @@ class GemmaKavach {
     
     async startMonitoring() {
         try {
-            this.addLogEntry('Requesting camera access...');
+            this.addLogEntry('🚀 Initializing dual-analysis monitoring...');
             
-            // Get camera access - prefer back camera on mobile, any camera on desktop
+            // Get camera access
             let videoConstraints = { width: 640, height: 480 };
             
-            // Try back camera first (better for crowd monitoring)
             try {
-                videoConstraints.facingMode = "environment"; // Back camera
+                videoConstraints.facingMode = "environment";
                 const stream = await navigator.mediaDevices.getUserMedia({ 
                     video: videoConstraints 
                 });
                 this.videoElement.srcObject = stream;
-                this.addLogEntry('Using back camera (recommended for monitoring)');
+                this.addLogEntry('📹 Using back camera (optimal for crowd monitoring)');
             } catch (backCameraError) {
-                // If back camera fails, try any available camera
-                console.log('Back camera not available, trying default camera');
                 delete videoConstraints.facingMode;
                 const stream = await navigator.mediaDevices.getUserMedia({ 
                     video: videoConstraints 
                 });
                 this.videoElement.srcObject = stream;
-                this.addLogEntry('Using available camera');
+                this.addLogEntry('📹 Using available camera');
             }
             
             this.elements.cameraOverlay.style.display = 'none';
@@ -109,29 +131,44 @@ class GemmaKavach {
             this.isMonitoring = true;
             this.sessionStartTime = Date.now();
             
+            // Reset analytics
+            this.resetAnalytics();
+            
             // Update UI
             this.elements.startBtn.disabled = true;
             this.elements.stopBtn.disabled = false;
             this.elements.sessionStatus.textContent = 'Monitoring';
             
-            // Start session timer
-            this.startSessionTimer();
+            // Add monitoring class to risk circle for enhanced animations
+            const riskCircle = document.querySelector('.risk-circle');
+            if (riskCircle) {
+                riskCircle.classList.add('monitoring');
+            }
             
-            // Start capturing frames
+            this.startSessionTimer();
             this.startFrameCapture();
             
-            this.addLogEntry('Monitoring started successfully', 'safe');
+            this.addLogEntry('✅ Dual-analysis monitoring started successfully', 'safe');
             
         } catch (error) {
             console.error('Failed to start monitoring:', error);
-            this.addLogEntry('Failed to start monitoring: ' + error.message, 'risk');
+            this.addLogEntry('❌ Failed to start monitoring: ' + error.message, 'risk');
             alert('Failed to start monitoring. Please check camera permissions.');
         }
     }
     
+    resetAnalytics() {
+        this.analytics = {
+            densityStats: {"Low": 0, "Medium": 0, "High": 0, "Unknown": 0},
+            motionStats: {"Calm": 0, "Chaotic": 0, "Unknown": 0},
+            riskLevels: {"SAFE": 0, "MODERATE": 0, "HIGH": 0, "CRITICAL": 0}
+        };
+        this.updateAnalyticsDisplay();
+    }
+    
     async createSession() {
         try {
-            const response = await fetch('/api/v1/session/create', {
+            const response = await fetch('/api/session/create', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -153,7 +190,7 @@ class GemmaKavach {
             this.elements.sessionId.textContent = this.sessionId;
             this.elements.sessionLocation.textContent = data.location;
             
-            this.addLogEntry(`Session created: ${this.sessionId}`);
+            this.addLogEntry(`🆔 Session created: ${this.sessionId}`, 'safe');
             
         } catch (error) {
             throw new Error('Session creation failed: ' + error.message);
@@ -171,8 +208,8 @@ class GemmaKavach {
     
     async captureAndAnalyzeFrame() {
         try {
-            // Show loading modal
-            this.elements.loadingModal.classList.add('show');
+            // Show enhanced loading modal
+            this.showAnalysisLoader();
             
             // Capture frame from video
             this.canvas.width = this.videoElement.videoWidth;
@@ -184,70 +221,247 @@ class GemmaKavach {
                 this.canvas.toBlob(resolve, 'image/jpeg', 0.8);
             });
             
-            // Send to API
+            // Send to enhanced API
             const formData = new FormData();
             formData.append('frame', blob, 'frame.jpg');
             
-            const response = await fetch(`/api/v1/session/${this.sessionId}/frame`, {
+            const analysisStart = performance.now();
+            const response = await fetch(`/api/session/${this.sessionId}/frame`, {
                 method: 'POST',
                 body: formData
             });
+            const analysisTime = (performance.now() - analysisStart) / 1000;
             
             if (!response.ok) {
                 throw new Error('Frame analysis failed');
             }
             
             const result = await response.json();
-            this.updateDashboard(result);
             
-            // Hide loading modal
-            this.elements.loadingModal.classList.remove('show');
+            // Enhanced dashboard update with dual analysis data
+            this.updateEnhancedDashboard(result, analysisTime);
+            
+            this.hideAnalysisLoader();
             
         } catch (error) {
             console.error('Frame capture failed:', error);
-            this.addLogEntry('Frame analysis failed: ' + error.message, 'risk');
-            this.elements.loadingModal.classList.remove('show');
+            this.addLogEntry('❌ Frame analysis failed: ' + error.message, 'risk');
+            this.hideAnalysisLoader();
         }
     }
     
-    updateDashboard(result) {
-        // Update frame counts
+    showAnalysisLoader() {
+        const modal = this.elements.loadingModal;
+        modal.classList.add('show');
+        
+        // Enhanced loading text
+        const modalContent = modal.querySelector('.modal-content p');
+        if (modalContent) {
+            modalContent.innerHTML = `
+                Analyzing frame...<br>
+                <small style="color: #00ffff; font-size: 0.8em;">
+                    🧠 Crowd Density | 🏃 Motion Behavior
+                </small>
+            `;
+        }
+    }
+    
+    hideAnalysisLoader() {
+        this.elements.loadingModal.classList.remove('show');
+    }
+    
+    updateEnhancedDashboard(result, analysisTime) {
+        // Update basic frame counts
         this.elements.framesAnalyzed.textContent = result.frames_analyzed;
         this.elements.framesFlagged.textContent = result.frames_flagged;
         
-        // Update risk assessment
+        // Update NEW dual analysis display
+        if (this.elements.currentDensity) {
+            this.elements.currentDensity.textContent = result.crowd_density;
+            this.elements.currentDensity.className = `density-value ${result.crowd_density.toLowerCase()}`;
+        }
+        
+        if (this.elements.currentMotion) {
+            this.elements.currentMotion.textContent = result.crowd_motion;
+            this.elements.currentMotion.className = `motion-value ${result.crowd_motion.toLowerCase()}`;
+        }
+        
+        if (this.elements.riskLevel) {
+            this.elements.riskLevel.textContent = result.risk_level;
+            this.elements.riskLevel.className = `risk-level-value ${result.risk_level.toLowerCase()}`;
+        }
+        
+        if (this.elements.analysisTime) {
+            this.elements.analysisTime.textContent = `${analysisTime.toFixed(2)}s`;
+        }
+        
+        // Enhanced risk assessment
         const riskScore = Math.round(result.updated_risk_score);
         this.elements.riskValue.textContent = `${riskScore}%`;
         
-        // Update risk circle and label
+        // Enhanced risk circle and label with 4-level system
         const riskCircle = document.querySelector('.risk-circle');
-        let verdict = 'SAFE';
-        let riskClass = 'safe';
-        
-        if (riskScore > 75) {
-            verdict = 'ALERT';
-            riskClass = 'alert';
-        } else if (riskScore > 30) {
-            verdict = 'WATCH';
-            riskClass = 'watch';
-        }
+        let verdict = this.getVerdictFromScore(riskScore);
+        let riskClass = verdict.toLowerCase();
         
         this.elements.riskLabel.textContent = verdict;
-        riskCircle.className = `risk-circle ${riskClass}`;
+        riskCircle.className = `risk-circle monitoring ${riskClass}`;
         riskCircle.style.setProperty('--progress', `${riskScore}%`);
         
-        // Update last analysis time
+        // Update analytics from detailed breakdown
+        if (result.analysis_details) {
+            this.updateLocalAnalytics(result.analysis_details);
+        }
+        
+        // Enhanced last analysis time
         const now = new Date().toLocaleTimeString();
         this.elements.lastAnalysis.textContent = now;
         
-        // Add to activity log
+        // Enhanced activity log with dual analysis info
+        this.addEnhancedLogEntry(result, riskScore, analysisTime);
+        
+        // Check for alerts and critical frames
+        this.updateAlertIndicators(result);
+    }
+    
+    getVerdictFromScore(score) {
+        if (score <= 15) return "SAFE";
+        if (score <= 40) return "WATCH";  
+        if (score <= 70) return "ALERT";
+        return "CRITICAL";
+    }
+    
+    updateLocalAnalytics(analysisDetails) {
+        if (analysisDetails.density_breakdown) {
+            this.analytics.densityStats = analysisDetails.density_breakdown;
+        }
+        if (analysisDetails.motion_breakdown) {
+            this.analytics.motionStats = analysisDetails.motion_breakdown;
+        }
+        if (analysisDetails.risk_level_breakdown) {
+            this.analytics.riskLevels = analysisDetails.risk_level_breakdown;
+        }
+        
+        this.updateAnalyticsDisplay();
+    }
+    
+    updateAnalyticsDisplay() {
+        // Update density chart
+        this.updateMiniChart('densityChart', this.analytics.densityStats, [
+            '#00ff88', '#ffaa00', '#ff3366', '#666'  // Low, Medium, High, Unknown
+        ]);
+        
+        // Update motion chart  
+        this.updateMiniChart('motionChart', this.analytics.motionStats, [
+            '#00ffff', '#ff3366', '#666'  // Calm, Chaotic, Unknown
+        ]);
+        
+        // Update risk level chart
+        this.updateMiniChart('riskLevelChart', this.analytics.riskLevels, [
+            '#00ff88', '#ffaa00', '#ff6600', '#ff3366'  // SAFE, MODERATE, HIGH, CRITICAL
+        ]);
+    }
+    
+    updateMiniChart(elementId, data, colors) {
+        const element = document.getElementById(elementId);
+        if (!element) return;
+        
+        const total = Object.values(data).reduce((sum, val) => sum + val, 0);
+        if (total === 0) {
+            element.innerHTML = '<div class="chart-empty">No data</div>';
+            return;
+        }
+        
+        let html = '<div class="mini-chart">';
+        let index = 0;
+        
+        for (const [label, count] of Object.entries(data)) {
+            if (count > 0) {
+                const percentage = (count / total * 100).toFixed(1);
+                html += `
+                    <div class="chart-bar" style="
+                        background: ${colors[index]};
+                        width: ${percentage}%;
+                        height: 20px;
+                        display: inline-block;
+                        margin-right: 2px;
+                        border-radius: 2px;
+                        position: relative;
+                    " title="${label}: ${count} (${percentage}%)">
+                        <span class="chart-label" style="
+                            position: absolute;
+                            top: -20px;
+                            left: 0;
+                            font-size: 10px;
+                            color: ${colors[index]};
+                            font-weight: bold;
+                        ">${label}</span>
+                    </div>
+                `;
+            }
+            index++;
+        }
+        
+        html += '</div>';
+        element.innerHTML = html;
+    }
+    
+    addEnhancedLogEntry(result, riskScore, analysisTime) {
         const logType = result.risk_detected ? 'risk' : 'safe';
-        const logMessage = `Frame ${result.frame_number}: ${result.risk_detected ? 'RISK DETECTED' : 'Safe'} (${riskScore}%)`;
+        const riskEmoji = this.getRiskEmoji(result.risk_level);
+        
+        const logMessage = `
+            Frame ${result.frame_number}: ${riskEmoji} ${result.risk_level}<br>
+            <small style="opacity: 0.8;">
+                Density: ${result.crowd_density} | Motion: ${result.crowd_motion} | 
+                Score: ${riskScore}% | Time: ${analysisTime.toFixed(2)}s
+            </small>
+        `;
+        
         this.addLogEntry(logMessage, logType);
         
-        // Special handling for high risk
-        if (verdict === 'ALERT') {
-            this.addLogEntry('⚠️ HIGH RISK DETECTED - Email alert triggered', 'risk');
+        // Special handling for high risk levels
+        if (result.risk_level === 'CRITICAL') {
+            this.addLogEntry('🚨 CRITICAL RISK DETECTED - Immediate attention required!', 'risk');
+        } else if (result.risk_level === 'HIGH') {
+            this.addLogEntry('⚠️ HIGH RISK DETECTED - Monitor closely', 'risk');
+        }
+    }
+    
+    getRiskEmoji(riskLevel) {
+        switch (riskLevel) {
+            case 'SAFE': return '🟢';
+            case 'MODERATE': return '🟡';
+            case 'HIGH': return '🟠';
+            case 'CRITICAL': return '🔴';
+            default: return '⚪';
+        }
+    }
+    
+    updateAlertIndicators(result) {
+        // Update critical frames count
+        if (this.elements.criticalFramesCount) {
+            const criticalCount = this.analytics.riskLevels.CRITICAL || 0;
+            this.elements.criticalFramesCount.textContent = criticalCount;
+            
+            // Add warning if critical frames >= 2
+            if (criticalCount >= 2) {
+                this.elements.criticalFramesCount.classList.add('critical-warning');
+            }
+        }
+        
+        // Update alert indicator
+        if (this.elements.alertIndicator) {
+            const shouldAlert = result.updated_risk_score >= 70 || 
+                               this.analytics.riskLevels.CRITICAL >= 2;
+            
+            if (shouldAlert) {
+                this.elements.alertIndicator.classList.add('alert-active');
+                this.elements.alertIndicator.innerHTML = `
+                    <i class="fas fa-exclamation-triangle"></i>
+                    ALERT TRIGGERED
+                `;
+            }
         }
     }
     
@@ -276,13 +490,20 @@ class GemmaKavach {
             clearInterval(this.captureInterval);
         }
         
+        // Remove monitoring animation from risk circle
+        const riskCircle = document.querySelector('.risk-circle');
+        if (riskCircle) {
+            riskCircle.classList.remove('monitoring');
+        }
+        
         // Update UI
         this.elements.startBtn.disabled = false;
         this.elements.stopBtn.disabled = true;
         this.elements.sessionStatus.textContent = 'Stopped';
         this.elements.cameraOverlay.style.display = 'flex';
         
-        this.addLogEntry('Monitoring stopped', 'safe');
+        this.addLogEntry('🛑 Monitoring stopped', 'safe');
+        this.addLogEntry(`📊 Session Summary: ${this.elements.framesAnalyzed.textContent} frames analyzed, ${this.elements.framesFlagged.textContent} flagged`);
     }
     
     addLogEntry(message, type = '') {
@@ -297,14 +518,14 @@ class GemmaKavach {
         
         this.elements.activityLog.insertBefore(logEntry, this.elements.activityLog.firstChild);
         
-        // Keep only last 10 entries
-        while (this.elements.activityLog.children.length > 10) {
+        // Keep only last 15 entries (increased for more detailed logs)
+        while (this.elements.activityLog.children.length > 15) {
             this.elements.activityLog.removeChild(this.elements.activityLog.lastChild);
         }
     }
 }
 
-// Initialize the application when DOM is loaded
+// Initialize the enhanced application when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     new GemmaKavach();
 });

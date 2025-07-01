@@ -1,4 +1,4 @@
-/* Futuristic CSS Styling for Gemma Kavach - Dark Cyberpunk Theme */
+/* Smart Responsive CSS for Gemma Kavach - Mobile Friendly */
 
 * {
     margin: 0;
@@ -18,14 +18,12 @@ body {
     overflow-x: hidden;
 }
 
-/* Animated background gradient */
 @keyframes gradientShift {
     0% { background-position: 0% 50%; }
     50% { background-position: 100% 50%; }
     100% { background-position: 0% 50%; }
 }
 
-/* Cyberpunk grid overlay */
 body::before {
     content: '';
     position: fixed;
@@ -69,9 +67,7 @@ body::before {
     background-clip: padding-box;
     position: relative;
     overflow: hidden;
-    box-shadow: 
-        0 8px 32px rgba(0, 255, 255, 0.1),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 255, 255, 0.1);
 }
 
 .header::before {
@@ -112,7 +108,6 @@ body::before {
     background: linear-gradient(135deg, #00ffff 0%, #ff00ff 50%, #ffff00 100%);
     border-radius: 16px;
     padding: 8px;
-    position: relative;
     animation: logoSpin 8s linear infinite;
 }
 
@@ -170,7 +165,6 @@ body::before {
     font-size: 0.875rem;
     font-weight: 600;
     border: 1px solid transparent;
-    position: relative;
     backdrop-filter: blur(10px);
 }
 
@@ -196,22 +190,24 @@ body::before {
     box-shadow: 0 0 20px rgba(255, 51, 102, 0.2);
 }
 
-.status-indicator.disconnected i {
-    color: #ff3366;
-    animation: errorBlink 1s ease-in-out infinite alternate;
-}
+/* SMART MAIN CONTENT - Desktop vs Mobile */
 
-@keyframes errorBlink {
-    0% { opacity: 1; }
-    100% { opacity: 0.3; }
-}
-
-/* Main Content - KEEP ORIGINAL RESPONSIVE BEHAVIOR */
+/* Desktop/Tablet Layout (>768px) - Two Columns */
 .main-content {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 32px;
     min-height: 80vh;
+}
+
+/* Mobile Layout (≤768px) - Single Column */
+@media (max-width: 768px) {
+    .main-content {
+        display: grid !important;
+        grid-template-columns: 1fr !important; /* Single column on mobile */
+        gap: 24px !important;
+        min-height: auto !important;
+    }
 }
 
 /* Camera Panel */
@@ -221,9 +217,7 @@ body::before {
     border-radius: 24px;
     padding: 32px;
     border: 1px solid rgba(0, 255, 255, 0.2);
-    box-shadow: 
-        0 8px 32px rgba(0, 255, 255, 0.1),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 255, 255, 0.1);
     position: relative;
     overflow: hidden;
 }
@@ -343,31 +337,23 @@ body::before {
 .btn-primary {
     background: linear-gradient(135deg, #00ff88 0%, #00ffff 100%);
     color: #000;
-    box-shadow: 
-        0 4px 16px rgba(0, 255, 136, 0.4),
-        0 0 20px rgba(0, 255, 255, 0.3);
+    box-shadow: 0 4px 16px rgba(0, 255, 136, 0.4);
 }
 
 .btn-primary:hover:not(:disabled) {
     transform: translateY(-2px) scale(1.02);
-    box-shadow: 
-        0 8px 24px rgba(0, 255, 136, 0.6),
-        0 0 30px rgba(0, 255, 255, 0.5);
+    box-shadow: 0 8px 24px rgba(0, 255, 136, 0.6);
 }
 
 .btn-secondary {
     background: linear-gradient(135deg, #ff3366 0%, #ff6b9d 100%);
     color: white;
-    box-shadow: 
-        0 4px 16px rgba(255, 51, 102, 0.4),
-        0 0 20px rgba(255, 107, 157, 0.3);
+    box-shadow: 0 4px 16px rgba(255, 51, 102, 0.4);
 }
 
 .btn-secondary:hover:not(:disabled) {
     transform: translateY(-2px) scale(1.02);
-    box-shadow: 
-        0 8px 24px rgba(255, 51, 102, 0.6),
-        0 0 30px rgba(255, 107, 157, 0.5);
+    box-shadow: 0 8px 24px rgba(255, 51, 102, 0.6);
 }
 
 /* Session Config */
@@ -407,9 +393,7 @@ body::before {
 .input-group input:focus {
     outline: none;
     border-color: #00ffff;
-    box-shadow: 
-        0 0 0 3px rgba(0, 255, 255, 0.2),
-        0 0 20px rgba(0, 255, 255, 0.3);
+    box-shadow: 0 0 0 3px rgba(0, 255, 255, 0.2);
     transform: scale(1.02);
 }
 
@@ -430,9 +414,7 @@ body::before {
     border-radius: 20px;
     padding: 28px;
     border: 1px solid rgba(0, 255, 255, 0.2);
-    box-shadow: 
-        0 8px 32px rgba(0, 255, 255, 0.1),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 255, 255, 0.1);
     position: relative;
     overflow: hidden;
     transition: all 0.3s ease;
@@ -440,9 +422,7 @@ body::before {
 
 .widget:hover {
     transform: translateY(-2px);
-    box-shadow: 
-        0 12px 40px rgba(0, 255, 255, 0.15),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    box-shadow: 0 12px 40px rgba(0, 255, 255, 0.15);
 }
 
 .widget h3 {
@@ -469,7 +449,7 @@ body::before {
     100% { filter: brightness(1.5); }
 }
 
-/* FIXED Risk Widget - No Overlap */
+/* FIXED Risk Widget */
 .risk-widget {
     display: flex;
     flex-direction: column;
@@ -480,12 +460,12 @@ body::before {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-bottom: 20px; /* FIXED: Add space below circle */
+    margin-bottom: 20px;
 }
 
 .risk-circle {
-    width: 140px;
-    height: 140px;
+    width: 120px;
+    height: 120px;
     border-radius: 50%;
     background: conic-gradient(from 0deg, #00ff88 0%, #00ff88 var(--progress, 0%), rgba(255, 255, 255, 0.1) var(--progress, 0%));
     display: flex;
@@ -494,24 +474,22 @@ body::before {
     justify-content: center;
     position: relative;
     transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 
-        0 0 30px rgba(0, 255, 136, 0.3),
-        inset 0 0 20px rgba(0, 0, 0, 0.3);
-    margin-bottom: 16px; /* FIXED: Explicit bottom margin */
+    box-shadow: 0 0 30px rgba(0, 255, 136, 0.3);
+    margin-bottom: 16px;
 }
 
 .risk-circle::before {
     content: '';
     position: absolute;
-    width: 110px;
-    height: 110px;
+    width: 95px;
+    height: 95px;
     border-radius: 50%;
     background: radial-gradient(circle at center, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%);
     backdrop-filter: blur(10px);
 }
 
 .risk-value {
-    font-size: 1.75rem;
+    font-size: 1.5rem;
     font-weight: 900;
     z-index: 1;
     color: #e1e5f2;
@@ -525,7 +503,7 @@ body::before {
 }
 
 .risk-label {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     font-weight: 800;
     letter-spacing: 0.1em;
     z-index: 1;
@@ -535,19 +513,16 @@ body::before {
 }
 
 .risk-circle.safe {
-    --progress: 0%;
     background: conic-gradient(from 0deg, #00ff88 0%, #00ff88 var(--progress, 0%), rgba(255, 255, 255, 0.1) var(--progress, 0%));
     box-shadow: 0 0 30px rgba(0, 255, 136, 0.4);
 }
 
 .risk-circle.watch {
-    --progress: 30%;
     background: conic-gradient(from 0deg, #ffaa00 0%, #ffaa00 var(--progress, 30%), rgba(255, 255, 255, 0.1) var(--progress, 30%));
     box-shadow: 0 0 30px rgba(255, 170, 0, 0.4);
 }
 
 .risk-circle.alert {
-    --progress: 75%;
     background: conic-gradient(from 0deg, #ff3366 0%, #ff3366 var(--progress, 75%), rgba(255, 255, 255, 0.1) var(--progress, 75%));
     box-shadow: 0 0 30px rgba(255, 51, 102, 0.4);
     animation: alertPulse 1s ease-in-out infinite alternate;
@@ -569,9 +544,9 @@ body::before {
     100% { filter: hue-rotate(360deg) brightness(1); }
 }
 
-/* FIXED Alert Indicator - Proper Spacing */
+/* FIXED Alert Indicator */
 .alert-indicator {
-    margin-top: 20px; /* FIXED: Ensure space above */
+    margin-top: 20px;
     padding: 10px 15px;
     background: linear-gradient(135deg, rgba(255, 51, 102, 0.2) 0%, rgba(255, 107, 157, 0.2) 100%);
     border: 2px solid rgba(255, 51, 102, 0.5);
@@ -583,9 +558,9 @@ body::before {
     text-transform: uppercase;
     letter-spacing: 0.05em;
     animation: alert-glow 2s ease-in-out infinite alternate;
-    position: relative; /* FIXED: Ensure proper positioning */
+    position: relative;
     z-index: 10;
-    clear: both; /* FIXED: Clear any floats */
+    clear: both;
 }
 
 .alert-indicator.alert-active {
@@ -628,7 +603,7 @@ body::before {
     20% { transform: rotate(-15deg); }
 }
 
-/* NEW: Current Frame Analysis Widget */
+/* Current Frame Analysis Widget */
 .analysis-widget {
     background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%);
     border: 1px solid rgba(0, 255, 255, 0.3);
@@ -928,9 +903,7 @@ body::before {
     border-radius: 20px;
     text-align: center;
     border: 2px solid rgba(0, 255, 255, 0.3);
-    box-shadow: 
-        0 20px 40px rgba(0, 0, 0, 0.5),
-        0 0 50px rgba(0, 255, 255, 0.2);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
     color: #e1e5f2;
 }
 
@@ -974,36 +947,94 @@ body::after {
     100% { transform: translateY(-100px); }
 }
 
-/* KEEP ORIGINAL RESPONSIVE DESIGN - WORKING MOBILE LAYOUT */
-@media (max-width: 1024px) {
+/* SMART RESPONSIVE DESIGN */
+
+/* Large Desktop (>1200px) - Full Two Column */
+@media (min-width: 1201px) {
     .main-content {
-        grid-template-columns: 1fr; /* SINGLE COLUMN ON SMALLER SCREENS */
+        grid-template-columns: 1.2fr 1fr; /* Camera slightly larger */
+        gap: 40px;
     }
     
-    .session-config {
-        grid-template-columns: 1fr;
+    .camera-container {
+        height: 450px;
     }
     
-    .stats-grid {
-        grid-template-columns: repeat(4, 1fr);
+    .risk-circle {
+        width: 140px;
+        height: 140px;
     }
     
-    /* NEW: Make analysis grid single column on tablets */
+    .risk-circle::before {
+        width: 110px;
+        height: 110px;
+    }
+    
+    .risk-value {
+        font-size: 1.75rem;
+    }
+}
+
+/* Desktop/Tablet Landscape (769px - 1200px) - Two Column */
+@media (min-width: 769px) and (max-width: 1200px) {
+    .main-content {
+        grid-template-columns: 1fr 1fr;
+        gap: 32px;
+    }
+    
+    .container {
+        padding: 20px;
+    }
+    
+    .camera-container {
+        height: 350px;
+    }
+    
+    .risk-circle {
+        width: 120px;
+        height: 120px;
+    }
+    
+    .risk-circle::before {
+        width: 95px;
+        height: 95px;
+    }
+    
+    .widget {
+        padding: 24px;
+    }
+    
     .analysis-grid {
         grid-template-columns: 1fr;
         gap: 12px;
     }
+    
+    .stats-grid {
+        grid-template-columns: 1fr 1fr;
+    }
 }
 
+/* MOBILE/TABLET PORTRAIT (≤768px) - SINGLE COLUMN */
 @media (max-width: 768px) {
     .container {
         padding: 16px;
     }
     
+    /* SINGLE COLUMN LAYOUT */
+    .main-content {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 24px !important;
+        min-height: auto !important;
+    }
+    
+    /* Mobile Header */
     .header {
         flex-direction: column;
         gap: 16px;
         text-align: center;
+        padding: 20px 24px;
+        margin-bottom: 24px;
     }
     
     .logo {
@@ -1011,38 +1042,50 @@ body::after {
         gap: 12px;
     }
     
-    .stats-grid {
-        grid-template-columns: 1fr 1fr;
-    }
-    
-    .camera-controls {
-        flex-direction: column;
+    .logo-icon {
+        width: 48px;
+        height: 48px;
     }
     
     .logo-text h1 {
         font-size: 1.875rem;
     }
     
-    /* MOBILE: Smaller risk circle for mobile */
-    .risk-circle {
-        width: 120px !important;
-        height: 120px !important;
+    .subtitle {
+        font-size: 0.8rem;
     }
     
-    .risk-circle::before {
-        width: 95px !important;
-        height: 95px !important;
+    /* Mobile Camera Panel */
+    .camera-panel {
+        padding: 24px;
+        margin-bottom: 0;
     }
     
-    .risk-value {
-        font-size: 1.5rem !important;
+    .camera-container {
+        height: 280px;
+        margin-bottom: 20px;
     }
     
-    .risk-label {
-        font-size: 0.7rem !important;
+    .camera-controls {
+        flex-direction: column;
+        gap: 12px;
     }
     
-    /* MOBILE: Smaller widget padding */
+    .btn {
+        padding: 12px 20px;
+        font-size: 0.8rem;
+    }
+    
+    .session-config {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    /* Mobile Dashboard Panel */
+    .dashboard-panel {
+        gap: 20px;
+    }
+    
     .widget {
         padding: 20px;
     }
@@ -1052,66 +1095,7 @@ body::after {
         margin-bottom: 16px;
     }
     
-    /* MOBILE: Analysis items full width */
-    .analysis-grid {
-        grid-template-columns: 1fr !important;
-        gap: 10px;
-    }
-    
-    .analysis-item {
-        padding: 12px;
-    }
-    
-    .analysis-value {
-        font-size: 1.1rem;
-    }
-    
-    /* MOBILE: Smaller camera container */
-    .camera-container {
-        height: 300px;
-    }
-    
-    .camera-panel {
-        padding: 24px;
-    }
-}
-
-/* SMALL MOBILE: Extra responsive adjustments */
-@media (max-width: 480px) {
-    .container {
-        padding: 12px;
-    }
-    
-    .header {
-        padding: 16px 20px;
-        margin-bottom: 20px;
-    }
-    
-    .logo-text h1 {
-        font-size: 1.5rem;
-    }
-    
-    .subtitle {
-        font-size: 0.75rem;
-    }
-    
-    .camera-container {
-        height: 250px;
-    }
-    
-    .camera-panel {
-        padding: 20px;
-    }
-    
-    .btn {
-        padding: 10px 16px;
-        font-size: 0.75rem;
-    }
-    
-    .widget {
-        padding: 16px;
-    }
-    
+    /* Mobile Risk Widget */
     .risk-circle {
         width: 100px !important;
         height: 100px !important;
@@ -1130,151 +1114,201 @@ body::after {
         font-size: 0.65rem !important;
     }
     
-    .stats-grid {
+    /* Mobile Analysis Grid */
+    .analysis-grid {
         grid-template-columns: 1fr !important;
-        gap: 10px;
+        gap: 12px !important;
+    }
+    
+    .analysis-item {
+        padding: 12px;
+    }
+    
+    .analysis-value {
+        font-size: 1.1rem;
+    }
+    
+    /* Mobile Stats Grid */
+    .stats-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 12px !important;
+    }
+    
+    .stat-item {
+        padding: 16px;
     }
     
     .stat-value {
         font-size: 1.4rem;
     }
     
-    .analysis-value {
-        font-size: 1rem;
+    .stat-label {
+        font-size: 0.7rem;
+    }
+    
+    /* Mobile Activity Log */
+    .activity-log {
+        max-height: 160px;
+    }
+    
+    .log-item {
+        padding: 8px;
+        font-size: 0.75rem;
+    }
+    
+    .log-time {
+        min-width: 50px;
+        font-size: 0.7rem;
+    }
+}
+
+/* SMALL MOBILE (≤480px) - Extra Compressed */
+@media (max-width: 480px) {
+    .container {
+        padding: 12px;
+    }
+    
+    .header {
+        padding: 16px 20px;
+        margin-bottom: 20px;
+    }
+    
+    .logo-text h1 {
+        font-size: 1.5rem;
+    }
+    
+    .subtitle {
+        font-size: 0.75rem;
+    }
+    
+    .camera-panel {
+        padding: 20px;
+    }
+    
+    .camera-container {
+        height: 220px;
     }
     
     .overlay-content i {
         font-size: 2rem;
     }
-}
-
-/* Status indicator enhanced animations */
-.status-indicator.connected::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 8px;
-    width: 6px;
-    height: 6px;
-    background: #00ff88;
-    border-radius: 50%;
-    transform: translateY(-50%);
-    box-shadow: 0 0 10px #00ff88;
-    animation: statusPulse 1.5s ease-in-out infinite;
-}
-
-@keyframes statusPulse {
-    0%, 100% { transform: translateY(-50%) scale(1); opacity: 1; }
-    50% { transform: translateY(-50%) scale(1.3); opacity: 0.7; }
-}
-
-/* Special effects and animations */
-.holographic-text {
-    background: linear-gradient(45deg, #ff0080, #00ffff, #ff0080, #00ffff);
-    background-size: 400% 400%;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    animation: hologram 3s ease-in-out infinite;
-}
-
-@keyframes hologram {
-    0%, 100% { background-position: 0% 50%; }
-    25% { background-position: 100% 50%; }
-    50% { background-position: 100% 100%; }
-    75% { background-position: 0% 100%; }
-}
-
-.neon-glow {
-    text-shadow: 
-        0 0 5px currentColor,
-        0 0 10px currentColor,
-        0 0 15px currentColor,
-        0 0 20px currentColor;
-}
-
-.btn-cyberpunk {
-    position: relative;
-    overflow: hidden;
-    transform-style: preserve-3d;
-}
-
-.btn-cyberpunk::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.3) 50%, transparent 70%);
-    transform: translateX(-100%) skew(-15deg);
-    transition: transform 0.6s;
-}
-
-.btn-cyberpunk:hover::after {
-    transform: translateX(100%) skew(-15deg);
-}
-
-.cyber-scroll::-webkit-scrollbar {
-    width: 8px;
-}
-
-.cyber-scroll::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 4px;
-}
-
-.cyber-scroll::-webkit-scrollbar-thumb {
-    background: linear-gradient(45deg, #00ffff, #ff00ff);
-    border-radius: 4px;
-    box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
-}
-
-.cyber-scroll::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(45deg, #ff00ff, #ffff00);
-    box-shadow: 0 0 15px rgba(255, 0, 255, 0.7);
-}
-
-/* Apply cyber scroll to activity log */
-.activity-log {
-    scrollbar-width: thin;
-    scrollbar-color: #00ffff rgba(0, 0, 0, 0.3);
-}
-
-/* Critical Warning */
-.critical-warning {
-    color: #ff3366 !important;
-    background: linear-gradient(135deg, rgba(255, 51, 102, 0.2) 0%, rgba(255, 107, 157, 0.2) 100%);
-    padding: 5px 10px;
-    border-radius: 15px;
-    border: 1px solid rgba(255, 51, 102, 0.5);
-    animation: critical-warning-pulse 1s ease-in-out infinite alternate;
-}
-
-@keyframes critical-warning-pulse {
-    0% { 
-        box-shadow: 0 0 5px rgba(255, 51, 102, 0.3);
-        transform: scale(1);
+    
+    .btn {
+        padding: 10px 16px;
+        font-size: 0.75rem;
     }
-    100% { 
-        box-shadow: 0 0 15px rgba(255, 51, 102, 0.6);
-        transform: scale(1.05);
+    
+    .widget {
+        padding: 16px;
+    }
+    
+    .widget h3 {
+        font-size: 0.9rem;
+        margin-bottom: 12px;
+    }
+    
+    .risk-circle {
+        width: 80px !important;
+        height: 80px !important;
+    }
+    
+    .risk-circle::before {
+        width: 64px !important;
+        height: 64px !important;
+    }
+    
+    .risk-value {
+        font-size: 1.1rem !important;
+    }
+    
+    .risk-label {
+        font-size: 0.6rem !important;
+    }
+    
+    .analysis-value {
+        font-size: 1rem;
+    }
+    
+    .analysis-label {
+        font-size: 0.7rem;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+    }
+    
+    .stat-item {
+        padding: 12px;
+    }
+    
+    .stat-value {
+        font-size: 1.2rem;
+    }
+    
+    .info-label, .info-value {
+        font-size: 0.8rem;
+    }
+    
+    .log-item {
+        padding: 6px;
+        font-size: 0.7rem;
+        gap: 8px;
+    }
+    
+    .activity-log {
+        max-height: 120px;
     }
 }
 
-/* Force visibility for all new widgets */
+/* Status indicator responsive */
+@media (max-width: 768px) {
+    .status-indicator {
+        padding: 10px 16px;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .status-indicator {
+        padding: 8px 12px;
+        font-size: 0.75rem;
+    }
+}
+
+/* Force visibility on all screen sizes */
+.dashboard-panel,
+.dashboard-panel *,
+.widget,
+.widget *,
 .analysis-widget,
-.analytics-widget,
 .stats-widget,
 .session-widget,
 .log-widget,
 .risk-widget {
-    display: block !important;
     visibility: visible !important;
+    display: block !important;
     opacity: 1 !important;
 }
 
 .dashboard-panel {
     display: flex !important;
     flex-direction: column !important;
+}
+
+.analysis-grid,
+.stats-grid {
+    display: grid !important;
+}
+
+/* Ensure proper spacing on all devices */
+.risk-meter {
+    margin-bottom: 20px !important;
+}
+
+.alert-indicator {
+    margin-top: 20px !important;
+    position: relative !important;
+    z-index: 10 !important;
+    clear: both !important;
 }

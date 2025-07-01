@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gemma Kavach - Crowd Safety Monitor</title>
+    <title>Gemma Kavach - Enhanced Crowd Safety Monitor</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
@@ -28,7 +28,7 @@
                 </div>
                 <div class="logo-text">
                     <h1>Gemma Kavach</h1>
-                    <span class="subtitle">Gemma3n Powered Crowd Safety Monitor</span>
+                    <span class="subtitle">Dual-Analysis Crowd Safety Monitor</span>
                 </div>
             </div>
             <div class="status-indicator" id="connectionStatus">
@@ -47,7 +47,8 @@
                     <div class="camera-overlay" id="cameraOverlay">
                         <div class="overlay-content">
                             <i class="fas fa-video"></i>
-                            <p>Click "Start Monitoring" to begin</p>
+                            <p>Click "Start Monitoring" to begin dual-analysis</p>
+                            <small style="color: #00ffff; opacity: 0.8;">🧠 Crowd Density + 🏃 Motion Analysis</small>
                         </div>
                     </div>
                 </div>
@@ -75,9 +76,9 @@
                 </div>
             </div>
 
-            <!-- Right Panel - Dashboard -->
+            <!-- Right Panel - Enhanced Dashboard -->
             <div class="dashboard-panel">
-                <!-- Risk Meter -->
+                <!-- Enhanced Risk Meter -->
                 <div class="widget risk-widget">
                     <h3><i class="fas fa-exclamation-triangle"></i> Risk Assessment</h3>
                     <div class="risk-meter">
@@ -86,9 +87,37 @@
                             <div class="risk-label" id="riskLabel">SAFE</div>
                         </div>
                     </div>
+                    <!-- NEW: Alert Indicator -->
+                    <div class="alert-indicator" id="alertIndicator" style="display: none;">
+                        <i class="fas fa-bell"></i>
+                        MONITORING
+                    </div>
                 </div>
 
-                <!-- Session Stats -->
+                <!-- NEW: Current Frame Analysis -->
+                <div class="widget analysis-widget">
+                    <h3><i class="fas fa-brain"></i> Current Frame Analysis</h3>
+                    <div class="analysis-grid">
+                        <div class="analysis-item">
+                            <div class="analysis-label">👥 Crowd Density</div>
+                            <div class="analysis-value density-value" id="currentDensity">-</div>
+                        </div>
+                        <div class="analysis-item">
+                            <div class="analysis-label">🏃 Motion Behavior</div>
+                            <div class="analysis-value motion-value" id="currentMotion">-</div>
+                        </div>
+                        <div class="analysis-item">
+                            <div class="analysis-label">⚠️ Risk Level</div>
+                            <div class="analysis-value risk-level-value" id="riskLevel">-</div>
+                        </div>
+                        <div class="analysis-item">
+                            <div class="analysis-label">⏱️ Analysis Time</div>
+                            <div class="analysis-value" id="analysisTime">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Enhanced Session Stats -->
                 <div class="widget stats-widget">
                     <h3><i class="fas fa-chart-bar"></i> Session Statistics</h3>
                     <div class="stats-grid">
@@ -101,12 +130,37 @@
                             <div class="stat-label">Frames Flagged</div>
                         </div>
                         <div class="stat-item">
+                            <div class="stat-value" id="criticalFramesCount">0</div>
+                            <div class="stat-label">Critical Frames</div>
+                        </div>
+                        <div class="stat-item">
                             <div class="stat-value" id="sessionTime">00:00</div>
                             <div class="stat-label">Session Time</div>
                         </div>
-                        <div class="stat-item">
-                            <div class="stat-value" id="lastAnalysis">-</div>
-                            <div class="stat-label">Last Analysis</div>
+                    </div>
+                </div>
+
+                <!-- NEW: Analytics Breakdown -->
+                <div class="widget analytics-widget">
+                    <h3><i class="fas fa-chart-pie"></i> Analytics Breakdown</h3>
+                    <div class="analytics-section">
+                        <div class="chart-container">
+                            <h4>👥 Density Distribution</h4>
+                            <div id="densityChart" class="mini-chart-container">
+                                <div class="chart-empty">No data</div>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <h4>🏃 Motion Analysis</h4>
+                            <div id="motionChart" class="mini-chart-container">
+                                <div class="chart-empty">No data</div>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <h4>🚦 Risk Levels</h4>
+                            <div id="riskLevelChart" class="mini-chart-container">
+                                <div class="chart-empty">No data</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -127,16 +181,20 @@
                             <span class="info-label">Status:</span>
                             <span class="info-value" id="sessionStatus">Not Started</span>
                         </div>
+                        <div class="info-row">
+                            <span class="info-label">Last Analysis:</span>
+                            <span class="info-value" id="lastAnalysis">-</span>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Activity Log -->
+                <!-- Enhanced Activity Log -->
                 <div class="widget log-widget">
                     <h3><i class="fas fa-list"></i> Activity Log</h3>
-                    <div class="activity-log" id="activityLog">
+                    <div class="activity-log cyber-scroll" id="activityLog">
                         <div class="log-item">
                             <span class="log-time">Ready</span>
-                            <span class="log-message">System initialized</span>
+                            <span class="log-message">Enhanced dual-analysis system initialized</span>
                         </div>
                     </div>
                 </div>
@@ -144,11 +202,26 @@
         </div>
     </div>
 
-    <!-- Loading Modal -->
+    <!-- Enhanced Loading Modal -->
     <div class="modal" id="loadingModal">
         <div class="modal-content">
-            <div class="spinner"></div>
+            <div class="spinner-container">
+                <div class="dual-spinner">
+                    <div class="spinner-ring density-ring"></div>
+                    <div class="spinner-ring motion-ring"></div>
+                </div>
+            </div>
             <p>Analyzing frame...</p>
+            <div class="analysis-progress">
+                <div class="progress-item">
+                    <span class="progress-icon">🧠</span>
+                    <span class="progress-text">Crowd Density</span>
+                </div>
+                <div class="progress-item">
+                    <span class="progress-icon">🏃</span>
+                    <span class="progress-text">Motion Behavior</span>
+                </div>
+            </div>
         </div>
     </div>
 
