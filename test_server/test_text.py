@@ -2,15 +2,15 @@ import requests
 import json
 
 # Your working Runpod server URL
-SERVER_URL = "https://tacudpffh27p0d-8000.proxy.runpod.net/"
+SERVER_URL = "https://3gdf7gz3vpdp0z-8000.proxy.runpod.net/"
 
 def test_text_generation():
     """Test text generation"""
     print("🧪 Testing text generation...")
-    
+        
     data = {
-        "prompt": "What is artificial intelligence in short?",
-        "max_tokens": 250
+        "prompt": "Explain the concept of artificial intelligence in short",  # Very simple
+        "max_tokens": 100    # Very short
     }
     
     response = requests.post(

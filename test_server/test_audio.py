@@ -1,6 +1,6 @@
 import requests
 import base64
-SERVER_URL = "https://tacudpffh27p0d-8000.proxy.runpod.net/"
+SERVER_URL = "https://3gdf7gz3vpdp0z-8000.proxy.runpod.net/"
 
 
 def test_google_audio():
