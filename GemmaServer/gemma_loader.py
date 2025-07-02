@@ -18,7 +18,7 @@ def get_model_and_processor():
     torch._dynamo.config.suppress_errors = True
     
     # Use Google's official approach for audio support
-    GEMMA_MODEL_ID = "google/gemma-3n-E4B-it"
+    GEMMA_MODEL_ID = "google/gemma-3n-E4B-it" #This is a 8 billion parameter model
     
     processor = AutoProcessor.from_pretrained(GEMMA_MODEL_ID)
     model = AutoModelForImageTextToText.from_pretrained(
