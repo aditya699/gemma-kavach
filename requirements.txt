@@ -22,3 +22,5 @@ imageio
 google-cloud-storage
 python-dotenv
 aiohttp
+
+ipykernel # for jupyter notebook

@@ -1,11 +1,11 @@
 import requests
 import base64
+
 SERVER_URL = "https://3gdf7gz3vpdp0z-8000.proxy.runpod.net/"
 
-
-def test_google_audio():
-    """Test with Google's official example audio file"""
-    print("🎵 Testing with Google's official audio file...")
+def test_audio_with_custom_prompt():
+    """Test audio processing with custom prompt"""
+    print("🎵 Testing audio with custom prompt...")
     
     # Use Google's official example audio file
     audio_url = "https://ai.google.dev/gemma/docs/audio/roses-are.wav"
@@ -15,19 +15,22 @@ def test_google_audio():
         response = requests.get(audio_url, timeout=10)
         
         if response.status_code != 200:
-            print(f"❌ Failed to download Google's audio: {response.status_code}")
+            print(f"❌ Failed to download audio: {response.status_code}")
             return
         
-        print("✅ Downloaded Google's audio file")
+        print("✅ Downloaded audio file")
         
         # Convert to base64
         audio_base64 = base64.b64encode(response.content).decode('utf-8')
         print(f"✅ Converted to base64 ({len(audio_base64)} chars)")
         
-        # Send to your server
-        data = {"data": audio_base64}
+        # Send to server with custom prompt
+        data = {
+            "data": audio_base64,
+            "prompt": "Translate the following audio to Hindi"
+        }
         
-        print("🚀 Sending to Gemma 3n server...")
+        print("🚀 Sending to server...")
         server_response = requests.post(
             f"{SERVER_URL}/ask",
             json=data,
@@ -36,11 +39,11 @@ def test_google_audio():
         )
         
         print(f"Status: {server_response.status_code}")
-        print(f"Response: {server_response.text}")
         
         if server_response.status_code == 200:
             result = server_response.json()
-            print(f"✅ Audio transcription: {result['text']}")
+            print(f"✅ Response: {result['text']}")
+            print(f"✅ Prompt used: {result['prompt_used']}")
         else:
             print(f"❌ Server error: {server_response.text}")
             
@@ -48,4 +51,4 @@ def test_google_audio():
         print(f"❌ Error: {e}")
 
 if __name__ == "__main__":
-    test_google_audio()
+    test_audio_with_custom_prompt()

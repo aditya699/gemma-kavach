@@ -3,7 +3,7 @@ FastAPI wrapper for Gemma-3n - CLEAN WORKING VERSION
 
 • POST /generate      – text→text (WORKING!)
 • POST /ask_image     – image+prompt→text (WORKING!)  
-• POST /ask          – audio→text (WORKING!)
+• POST /ask          – audio+prompt→text (WORKING!)
 """
 
 import base64, os, tempfile, torch
@@ -22,6 +22,7 @@ class TextRequest(BaseModel):
 
 class AudioPayload(BaseModel):
     data: str  # base-64 audio data
+    prompt: str = "What is this audio about?"  # Default prompt with user customization
 
 # --------------------------------------------------------------------
 # FastAPI + CORS
@@ -161,12 +162,12 @@ async def ask_audio(payload: AudioPayload):
             wav_path = tmp.name
             tmp.write(wav_bytes)
 
-        # Use the WORKING multimodal format
+        # Use the WORKING multimodal format with user-provided prompt
         messages = [{
             "role": "user",
             "content": [
                 {"type": "audio", "audio": wav_path},
-                {"type": "text", "text": "What is this audio about?"},
+                {"type": "text", "text": payload.prompt},
             ],
         }]
 
@@ -174,7 +175,8 @@ async def ask_audio(payload: AudioPayload):
         
         return {
             "text": sanitize(reply),
-            "status": "✅ Audio processing successful!"
+            "status": "✅ Audio processing successful!",
+            "prompt_used": payload.prompt
         }
 
     except Exception as exc:
@@ -212,7 +214,7 @@ async def get_capabilities():
     return {
         "text_generation": "✅ Fully supported and working",
         "image_processing": "✅ WORKING! (Using RAW tokenizer)", 
-        "audio_processing": "✅ WORKING! (Using RAW tokenizer)",
+        "audio_processing": "✅ WORKING! (Using RAW tokenizer with custom prompts)",
         "model": "gemma-3n-E4B-it",
         "precision": "4-bit (tutorial config)",
         "approach": "Single RAW tokenizer for all requests - no template conflicts"
