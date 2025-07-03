@@ -22,5 +22,5 @@ imageio
 google-cloud-storage
 python-dotenv
 aiohttp
-
+soundfile
 ipykernel # for jupyter notebook
