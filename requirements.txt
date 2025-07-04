@@ -24,3 +24,4 @@ python-dotenv
 aiohttp
 soundfile
 ipykernel # for jupyter notebook
+google-cloud-texttospeech

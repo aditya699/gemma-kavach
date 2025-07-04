@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemma Kavach - Voice Command System</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 100 100" width="40" height="40">
+                        <circle cx="50" cy="50" r="45" fill="none" stroke="url(#gradient)" stroke-width="8"/>
+                        <circle cx="50" cy="30" r="12" fill="#4F46E5"/>
+                        <circle cx="35" cy="65" r="8" fill="#7C3AED"/>
+                        <circle cx="65" cy="65" r="8" fill="#06B6D4"/>
+                        <defs>
+                            <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#4F46E5"/>
+                                <stop offset="100%" style="stop-color:#06B6D4"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <div class="logo-text">
+                    <h1>Gemma Kavach</h1>
+                    <span class="subtitle">Voice Command System</span>
+                </div>
+            </div>
+            <div class="status-indicator" id="connectionStatus">
+                <i class="fas fa-circle"></i>
+                <span>Connecting...</span>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Voice Command Panel -->
+            <div class="voice-panel">
+                <div class="voice-card">
+                    <h2><i class="fas fa-microphone"></i> Voice Zone Commands</h2>
+                    <p class="voice-description">
+                        Ask for zone security updates using voice commands in Hindi
+                    </p>
+                    
+                    <div class="voice-interface">
+                        <div class="voice-button-container">
+                            <button id="voiceButton" class="voice-button">
+                                <div class="button-inner">
+                                    <i class="fas fa-microphone"></i>
+                                </div>
+                                <div class="pulse-ring"></div>
+                                <div class="pulse-ring-2"></div>
+                            </button>
+                        </div>
+                        
+                        <div class="voice-status">
+                            <div class="status-text" id="voiceStatusText">Click to start recording</div>
+                            <div class="status-indicator-voice" id="voiceStatusIndicator">
+                                <div class="status-dot"></div>
+                                <span>Ready</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Voice Feedback -->
+                    <div class="voice-feedback" id="voiceFeedback" style="display: none;">
+                        <div class="transcription-section" id="transcriptionSection" style="display: none;">
+                            <h4><i class="fas fa-comment"></i> What you said:</h4>
+                            <div class="transcription-text" id="transcriptionText"></div>
+                        </div>
+                        
+                        <div class="response-section" id="responseSection" style="display: none;">
+                            <h4><i class="fas fa-robot"></i> Zone Update:</h4>
+                            <div class="response-text" id="responseText"></div>
+                        </div>
+                    </div>
+
+                    <!-- Voice Instructions -->
+                    <div class="voice-instructions">
+                        <h3><i class="fas fa-info-circle"></i> How to use:</h3>
+                        <div class="instructions-grid">
+                            <div class="instruction-item">
+                                <div class="instruction-icon">🎤</div>
+                                <div class="instruction-text">
+                                    <strong>Record</strong><br>
+                                    Click to start, click red STOP or press ESC
+                                </div>
+                            </div>
+                            <div class="instruction-item">
+                                <div class="instruction-icon">🗣️</div>
+                                <div class="instruction-text">
+                                    <strong>Speak</strong><br>
+                                    Say "ज़ोन बी की सिक्योरिटी अपडेट दीजिए"
+                                </div>
+                            </div>
+                            <div class="instruction-item">
+                                <div class="instruction-icon">👂</div>
+                                <div class="instruction-text">
+                                    <strong>Listen</strong><br>
+                                    Get real-time zone security status
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Zone Status Panel -->
+            <div class="status-panel">
+                <!-- Current Zone Info -->
+                <div class="zone-card">
+                    <h3><i class="fas fa-map-marker-alt"></i> Current Zone Query</h3>
+                    <div class="zone-info">
+                        <div class="zone-display" id="currentZone">
+                            <div class="zone-label">No zone selected</div>
+                            <div class="zone-status">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Available Zones -->
+                <div class="zones-card">
+                    <h3><i class="fas fa-th-large"></i> Available Zones</h3>
+                    <div class="zones-grid">
+                        <div class="zone-item" data-zone="A">
+                            <div class="zone-letter">A</div>
+                            <div class="zone-name">Mela Zone A</div>
+                            <div class="zone-status-dot safe"></div>
+                        </div>
+                        <div class="zone-item" data-zone="B">
+                            <div class="zone-letter">B</div>
+                            <div class="zone-name">Mela Zone B</div>
+                            <div class="zone-status-dot safe"></div>
+                        </div>
+                        <div class="zone-item" data-zone="C">
+                            <div class="zone-letter">C</div>
+                            <div class="zone-name">Mela Zone C</div>
+                            <div class="zone-status-dot safe"></div>
+                        </div>
+                        <div class="zone-item" data-zone="D">
+                            <div class="zone-letter">D</div>
+                            <div class="zone-name">Mela Zone D</div>
+                            <div class="zone-status-dot safe"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Commands -->
+                <div class="history-card">
+                    <h3><i class="fas fa-history"></i> Recent Commands</h3>
+                    <div class="command-history" id="commandHistory">
+                        <div class="history-item example">
+                            <div class="history-time">Ready</div>
+                            <div class="history-text">Voice command system initialized</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Status -->
+                <div class="system-card">
+                    <h3><i class="fas fa-cogs"></i> System Status</h3>
+                    <div class="system-stats">
+                        <div class="stat-row">
+                            <span class="stat-label">Voice Engine:</span>
+                            <span class="stat-value" id="voiceEngineStatus">Ready</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Database:</span>
+                            <span class="stat-value" id="databaseStatus">Connected</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Total Commands:</span>
+                            <span class="stat-value" id="totalCommands">0</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Success Rate:</span>
+                            <span class="stat-value" id="successRate">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Processing Modal -->
+    <div class="modal" id="processingModal">
+        <div class="modal-content">
+            <div class="processing-animation">
+                <div class="voice-waves">
+                    <div class="wave"></div>
+                    <div class="wave"></div>
+                    <div class="wave"></div>
+                    <div class="wave"></div>
+                    <div class="wave"></div>
+                </div>
+                <div class="processing-text" id="processingText">
+                    <h3>Processing Voice Command</h3>
+                    <p id="processingStep">Listening...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
