@@ -1,53 +1,72 @@
-# utils.py - Add these functions to your existing utils.py file
+# Enhanced utils.py with Google Text-to-Speech
 
 import requests
 import base64
 import pandas as pd
+import os
+from google.cloud import texttospeech
+import tempfile
+import json
 
-# Add this configuration
+# Configuration
 SERVER_URL = "https://3gdf7gz3vpdp0z-8000.proxy.runpod.net/"
-TEST_MODE = False  # Set to True for offline testing
+TEST_MODE = False
+GOOGLE_TTS_API_KEY = os.getenv("GOOGLE_TEXT_TO_SPEECH")
 
 def transcribe_audio_from_bytes(audio_bytes: bytes, prompt="Transcribe this audio"):
-    """Get transcription from audio bytes with error handling and fallback"""
+    """Get transcription from audio bytes with enhanced error handling and fallback"""
     try:
         # Convert audio to base64
         audio_base64 = base64.b64encode(audio_bytes).decode("utf-8")
         
         # Try the main transcription endpoint first
-        data = {"data": audio_base64, "prompt": "Transcribe this Hindi audio speech to text. Only return the transcribed text, nothing else."}
+        data = {"data": audio_base64, "prompt": "Transcribe this in Hindi"}
         
         print(f"📤 Sending audio data ({len(audio_bytes)} bytes) to RunPod server...")
-        response = requests.post(f"{SERVER_URL}ask", json=data, timeout=60)
         
-        if response.status_code == 200:
-            result = response.json()
-            if "text" in result and result["text"].strip():
-                print(f"✅ Transcription successful: {result['text']}")
-                return result["text"]
-            else:
-                print("⚠️ Empty transcription result")
-                return "No speech detected"
-        else:
-            print(f"❌ Transcription API error: {response.status_code} - {response.text}")
-            
-            # Try alternative endpoint if available
+        # Try multiple times with different configurations
+        for attempt in range(3):
             try:
-                alt_data = {"audio_data": audio_base64, "task": "transcribe"}
-                alt_response = requests.post(f"{SERVER_URL}/transcribe", json=alt_data, timeout=60)
-                if alt_response.status_code == 200:
-                    alt_result = alt_response.json()
-                    if "text" in alt_result:
-                        print(f"✅ Alternative transcription successful: {alt_result['text']}")
-                        return alt_result["text"]
-            except Exception as alt_e:
-                print(f"⚠️ Alternative endpoint also failed: {alt_e}")
-            
-            # If all fails, return proper error message
-            return "TRANSCRIPTION_FAILED"
+                response = requests.post(f"{SERVER_URL}ask", json=data, timeout=90)
+                
+                if response.status_code == 200:
+                    result = response.json()
+                    if "text" in result and result["text"].strip():
+                        transcribed_text = result["text"].strip()
+                        print(f"✅ Transcription successful (attempt {attempt + 1}): {transcribed_text}")
+                        return transcribed_text
+                    else:
+                        print(f"⚠️ Empty transcription result (attempt {attempt + 1})")
+                        if attempt == 2:  # Last attempt
+                            return "No speech detected"
+                else:
+                    print(f"❌ Transcription API error (attempt {attempt + 1}): {response.status_code}")
+                    if attempt == 2:  # Last attempt
+                        return "TRANSCRIPTION_FAILED"
+                        
+            except requests.exceptions.Timeout:
+                print(f"⏱️ Request timeout (attempt {attempt + 1})")
+                if attempt == 2:
+                    return "TRANSCRIPTION_FAILED"
+            except requests.exceptions.ConnectionError:
+                print(f"🔌 Connection error (attempt {attempt + 1})")
+                if attempt == 2:
+                    return "TRANSCRIPTION_FAILED"
+            except Exception as e:
+                print(f"❌ Transcription error (attempt {attempt + 1}): {e}")
+                if attempt == 2:
+                    return "TRANSCRIPTION_FAILED"
+                    
+            # Wait before retrying
+            if attempt < 2:
+                print(f"🔄 Retrying in {2 ** attempt} seconds...")
+                import time
+                time.sleep(2 ** attempt)
+        
+        return "TRANSCRIPTION_FAILED"
             
     except Exception as e:
-        print(f"❌ Transcription error: {e}")
+        print(f"❌ Critical transcription error: {e}")
         return "TRANSCRIPTION_FAILED"
 
 def extract_zone_info(text):
@@ -79,8 +98,27 @@ Output:"""
 def get_zone_update(zone_name):
     """Get latest update for the zone from database"""
     try:
-        # Load the processed sessions data from CSV
-        df = pd.read_csv("sessions_data.csv")
+        # Try multiple possible locations for the CSV file
+        csv_paths = [
+            "sessions_data.csv",  # Current directory
+            "../feature_notebook/sessions_data.csv",  # Parent directory
+            "feature_notebook/sessions_data.csv",  # Relative path
+            os.path.join(os.path.dirname(__file__), "..", "feature_notebook", "sessions_data.csv")  # Absolute path
+        ]
+        
+        df = None
+        for csv_path in csv_paths:
+            try:
+                if os.path.exists(csv_path):
+                    df = pd.read_csv(csv_path)
+                    print(f"✅ Found CSV file at: {csv_path}")
+                    break
+            except Exception as e:
+                print(f"❌ Failed to read CSV from {csv_path}: {e}")
+                continue
+        
+        if df is None:
+            return f"❌ Database file 'sessions_data.csv' not found in any of the expected locations: {csv_paths}"
         
         # Convert timestamp columns to datetime for proper sorting
         df['last_analysis'] = pd.to_datetime(df['last_analysis'], errors='coerce')
@@ -185,3 +223,80 @@ Hindi Message:"""
             
     except Exception as e:
         return "तकनीकी समस्या के कारण अपडेट नहीं मिल सका।"
+
+def generate_speech_audio(text: str, language_code: str = "hi-IN") -> str:
+    """
+    Convert text to speech using Google Text-to-Speech API
+    Returns base64 encoded audio data
+    """
+    try:
+        if not GOOGLE_TTS_API_KEY:
+            print("⚠️ Google TTS API key not found, skipping audio generation")
+            return None
+            
+        print(f"🎵 Generating speech for text: {text[:50]}...")
+        
+        # Prepare the request payload
+        url = f"https://texttospeech.googleapis.com/v1/text:synthesize?key={GOOGLE_TTS_API_KEY}"
+        
+        # Configure voice settings for Hindi
+        payload = {
+            "input": {"text": text},
+            "voice": {
+                "languageCode": language_code,
+                "name": "hi-IN-Wavenet-A",  # Female Hindi voice
+                "ssmlGender": "FEMALE"
+            },
+            "audioConfig": {
+                "audioEncoding": "MP3",
+                "speakingRate": 0.9,  # Slightly slower for clarity
+                "pitch": 0.0,
+                "volumeGainDb": 0.0
+            }
+        }
+        
+        headers = {
+            "Content-Type": "application/json"
+        }
+        
+        # Make the API request
+        response = requests.post(url, headers=headers, json=payload, timeout=30)
+        
+        if response.status_code == 200:
+            result = response.json()
+            audio_content = result.get("audioContent")
+            
+            if audio_content:
+                print("✅ Google TTS audio generated successfully")
+                return audio_content  # Already base64 encoded
+            else:
+                print("❌ No audio content in response")
+                return None
+                
+        else:
+            print(f"❌ Google TTS API error: {response.status_code} - {response.text}")
+            return None
+            
+    except Exception as e:
+        print(f"❌ Error generating speech: {e}")
+        return None
+
+def generate_speech_with_fallback(text: str) -> str:
+    """
+    Generate speech with fallback options
+    """
+    # Try Google TTS first
+    audio_content = generate_speech_audio(text, "hi-IN")
+    
+    if audio_content:
+        return audio_content
+    
+    # Try English if Hindi fails
+    print("🔄 Trying English voice as fallback...")
+    audio_content = generate_speech_audio(text, "en-IN")
+    
+    if audio_content:
+        return audio_content
+    
+    print("❌ All TTS options failed")
+    return None
