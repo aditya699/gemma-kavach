@@ -23,7 +23,7 @@ from utils import (
 router = APIRouter()
 
 # Gemma server configuration
-GEMMA_API_URL = "https://3gdf7gz3vpdp0z-8000.proxy.runpod.net/ask_image"
+GEMMA_API_URL = "https://wgbursvubfm2u5-8000.proxy.runpod.net/ask_image"
 # Improved analysis prompts
 CROWD_DENSITY_PROMPT = (
     "Analyze this image and determine the crowd density level. "

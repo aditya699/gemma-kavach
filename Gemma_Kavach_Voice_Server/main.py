@@ -53,13 +53,13 @@ async def health_check():
 if __name__ == "__main__":
     import uvicorn
     print("🚀 Starting Gemma Kavach Vision Server...")
-    print("📍 Server will run on: http://localhost:38277")
-    print("📖 API docs will be available at: http://localhost:38277/docs")
-    print("🎤 Voice command endpoint: http://localhost:38277/api/voice-command")  # Added this
+    print("📍 Server will run on: http://localhost:7860")
+    print("📖 API docs will be available at: http://localhost:7860/docs")
+    print("🎤 Voice command endpoint: http://localhost:7860/api/voice-command")  # Added this
     
     uvicorn.run(
         app, 
         host="0.0.0.0",
-        port=38277,
+        port=7860,
         reload=True
     )

@@ -9,7 +9,7 @@ import tempfile
 import json
 
 # Configuration
-SERVER_URL = "https://3gdf7gz3vpdp0z-8000.proxy.runpod.net/"
+SERVER_URL = "https://wgbursvubfm2u5-8000.proxy.runpod.net/"
 TEST_MODE = False
 GOOGLE_TTS_API_KEY = os.getenv("GOOGLE_TEXT_TO_SPEECH")
 
@@ -85,7 +85,7 @@ Output:"""
 
     data = {"prompt": prompt, "max_tokens": 10, "processing_mode": "force_off"}
     
-    response = requests.post(f"{SERVER_URL}/generate", json=data, timeout=30)
+    response = requests.post(f"{SERVER_URL}/generate", json=data, timeout=90)
     
     if response.status_code == 200:
         zone = response.json()["text"].strip()
@@ -211,9 +211,9 @@ Example style: "स्थिति सामान्य है। रिस्�
 
 Hindi Message:"""
 
-        data = {"prompt": prompt, "max_tokens": 150}
+        data = {"prompt": prompt, "max_tokens": 200}
         
-        response = requests.post(f"{SERVER_URL}/generate", json=data, timeout=30)
+        response = requests.post(f"{SERVER_URL}/generate", json=data, timeout=90)
         
         if response.status_code == 200:
             hindi_message = response.json()["text"].strip()
@@ -222,6 +222,7 @@ Hindi Message:"""
             return "अपडेट प्राप्त करने में कुछ समस्या है। कृपया दोबारा कोशिश करें।"
             
     except Exception as e:
+        print(f"❌ Error generating Hindi message: {e}")
         return "तकनीकी समस्या के कारण अपडेट नहीं मिल सका।"
 
 def generate_speech_audio(text: str, language_code: str = "hi-IN") -> str:
@@ -260,7 +261,7 @@ def generate_speech_audio(text: str, language_code: str = "hi-IN") -> str:
         }
         
         # Make the API request
-        response = requests.post(url, headers=headers, json=payload, timeout=30)
+        response = requests.post(url, headers=headers, json=payload, timeout=90)
         
         if response.status_code == 200:
             result = response.json()

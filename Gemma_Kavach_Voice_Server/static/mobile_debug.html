@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Debug - Gemma Kavach</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            color: #fff;
+            padding: 10px;
+            line-height: 1.4;
+        }
+        
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #00ff88;
+        }
+        
+        .section {
+            background: #2a2a3e;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #3a3a4e;
+        }
+        
+        .section h2 {
+            color: #4F46E5;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .info-grid {
+            display: grid;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #3a3a4e;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #e2e8f0;
+        }
+        
+        .info-value {
+            color: #00ff88;
+            text-align: right;
+            max-width: 60%;
+            word-break: break-all;
+        }
+        
+        .test-button {
+            background: #4F46E5;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin: 5px;
+            width: 100%;
+            transition: background 0.3s;
+        }
+        
+        .test-button:hover {
+            background: #3730A3;
+        }
+        
+        .test-button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        
+        .success { color: #00ff88; }
+        .error { color: #ff3366; }
+        .warning { color: #ffaa00; }
+        
+        .log {
+            background: #1a1a2e;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #3a3a4e;
+        }
+        
+        .log-entry {
+            margin: 2px 0;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        
+        .log-entry.success { background: rgba(0, 255, 136, 0.1); }
+        .log-entry.error { background: rgba(255, 51, 102, 0.1); }
+        .log-entry.warning { background: rgba(255, 170, 0, 0.1); }
+        
+        .format-test {
+            display: grid;
+            gap: 5px;
+            margin: 10px 0;
+        }
+        
+        .format-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            background: #1a1a2e;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 0.8rem;
+        }
+        
+        .recording {
+            background: #dc2626 !important;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .copy-button {
+            background: #06B6D4;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            margin: 5px 0;
+        }
+        
+        .copy-button:hover {
+            background: #0891b2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📱 Mobile Audio Debug Tool</h1>
+        
+        <!-- Device Info -->
+        <div class="section">
+            <h2>📱 Device Information</h2>
+            <div class="info-grid" id="deviceInfo">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+        
+        <!-- Browser Support -->
+        <div class="section">
+            <h2>🌐 Browser Support</h2>
+            <div class="info-grid" id="browserSupport">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+        
+        <!-- Audio Formats -->
+        <div class="section">
+            <h2>🎵 Audio Format Support</h2>
+            <div class="format-test" id="audioFormats">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+        
+        <!-- Test Controls -->
+        <div class="section">
+            <h2>🧪 Audio Recording Test</h2>
+            <button id="permissionTest" class="test-button">🎤 Test Microphone Permission</button>
+            <button id="recordTest" class="test-button">🔴 Test Recording</button>
+            <button id="stopTest" class="test-button hidden">⏹️ Stop Test</button>
+            <button id="formatTest" class="test-button">🔍 Test All Formats</button>
+        </div>
+        
+        <!-- Test Results -->
+        <div class="section">
+            <h2>📋 Test Results</h2>
+            <div class="log" id="testLog">
+                <div class="log-entry">Ready to test...</div>
+            </div>
+            <button id="copyLog" class="copy-button">📋 Copy Debug Info</button>
+            <button id="clearLog" class="copy-button">🗑️ Clear Log</button>
+        </div>
+        
+        <!-- Debug Data -->
+        <div class="section">
+            <h2>🔧 Debug Data (Copy & Send)</h2>
+            <textarea id="debugData" class="log" style="width: 100%; height: 150px; resize: vertical; font-family: monospace;" readonly></textarea>
+            <button id="copyDebug" class="copy-button">📋 Copy All Debug Data</button>
+        </div>
+    </div>
+
+    <script>
+        class MobileDebugger {
+            constructor() {
+                this.testResults = [];
+                this.mediaRecorder = null;
+                this.isRecording = false;
+                this.audioChunks = [];
+                
+                this.init();
+            }
+            
+            init() {
+                this.populateDeviceInfo();
+                this.populateBrowserSupport();
+                this.populateAudioFormats();
+                this.setupEventListeners();
+                this.generateDebugData();
+            }
+            
+            populateDeviceInfo() {
+                const info = this.getDeviceInfo();
+                const container = document.getElementById('deviceInfo');
+                
+                Object.entries(info).forEach(([key, value]) => {
+                    const item = document.createElement('div');
+                    item.className = 'info-item';
+                    item.innerHTML = `
+                        <span class="info-label">${key}:</span>
+                        <span class="info-value">${value}</span>
+                    `;
+                    container.appendChild(item);
+                });
+            }
+            
+            populateBrowserSupport() {
+                const support = this.getBrowserSupport();
+                const container = document.getElementById('browserSupport');
+                
+                Object.entries(support).forEach(([key, value]) => {
+                    const item = document.createElement('div');
+                    item.className = 'info-item';
+                    const statusClass = value ? 'success' : 'error';
+                    const statusText = value ? '✅ Supported' : '❌ Not Supported';
+                    item.innerHTML = `
+                        <span class="info-label">${key}:</span>
+                        <span class="info-value ${statusClass}">${statusText}</span>
+                    `;
+                    container.appendChild(item);
+                });
+            }
+            
+            populateAudioFormats() {
+                const formats = this.getAudioFormats();
+                const container = document.getElementById('audioFormats');
+                
+                formats.forEach(format => {
+                    const item = document.createElement('div');
+                    item.className = 'format-item';
+                    const statusClass = format.supported ? 'success' : 'error';
+                    const statusIcon = format.supported ? '✅' : '❌';
+                    item.innerHTML = `
+                        <span>${format.format}</span>
+                        <span class="${statusClass}">${statusIcon}</span>
+                    `;
+                    container.appendChild(item);
+                });
+            }
+            
+            setupEventListeners() {
+                document.getElementById('permissionTest').addEventListener('click', () => this.testMicrophonePermission());
+                document.getElementById('recordTest').addEventListener('click', () => this.testRecording());
+                document.getElementById('stopTest').addEventListener('click', () => this.stopRecording());
+                document.getElementById('formatTest').addEventListener('click', () => this.testAllFormats());
+                document.getElementById('copyLog').addEventListener('click', () => this.copyLog());
+                document.getElementById('clearLog').addEventListener('click', () => this.clearLog());
+                document.getElementById('copyDebug').addEventListener('click', () => this.copyDebugData());
+            }
+            
+            getDeviceInfo() {
+                const ua = navigator.userAgent;
+                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+                const isIOS = /iPad|iPhone|iPod/.test(ua);
+                const isAndroid = /Android/.test(ua);
+                
+                return {
+                    'Mobile Device': isMobile ? 'Yes' : 'No',
+                    'iOS': isIOS ? 'Yes' : 'No',
+                    'Android': isAndroid ? 'Yes' : 'No',
+                    'Platform': navigator.platform,
+                    'Language': navigator.language,
+                    'User Agent': ua,
+                    'Screen Size': `${screen.width}x${screen.height}`,
+                    'Viewport': `${window.innerWidth}x${window.innerHeight}`,
+                    'Device Pixel Ratio': window.devicePixelRatio || 1,
+                    'Touch Support': 'ontouchstart' in window ? 'Yes' : 'No',
+                    'Online': navigator.onLine ? 'Yes' : 'No'
+                };
+            }
+            
+            getBrowserSupport() {
+                return {
+                    'MediaRecorder': !!window.MediaRecorder,
+                    'getUserMedia': !!navigator.mediaDevices?.getUserMedia,
+                    'AudioContext': !!(window.AudioContext || window.webkitAudioContext),
+                    'WebRTC': !!window.RTCPeerConnection,
+                    'WebAssembly': typeof WebAssembly === 'object',
+                    'Service Worker': 'serviceWorker' in navigator,
+                    'Push Notifications': 'PushManager' in window,
+                    'Permissions API': 'permissions' in navigator
+                };
+            }
+            
+            getAudioFormats() {
+                if (!window.MediaRecorder) return [];
+                
+                const formats = [
+                    'audio/webm;codecs=opus',
+                    'audio/webm',
+                    'audio/mp4',
+                    'audio/wav',
+                    'audio/ogg;codecs=opus',
+                    'audio/mpeg',
+                    'audio/mp4;codecs=mp4a.40.2',
+                    'audio/aac',
+                    'audio/flac',
+                    'audio/x-m4a'
+                ];
+                
+                return formats.map(format => ({
+                    format,
+                    supported: MediaRecorder.isTypeSupported(format)
+                }));
+            }
+            
+            async testMicrophonePermission() {
+                this.log('🎤 Testing microphone permission...', 'info');
+                
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    stream.getTracks().forEach(track => track.stop());
+                    this.log('✅ Microphone permission granted', 'success');
+                    this.testResults.push({ test: 'Microphone Permission', result: 'PASS' });
+                } catch (error) {
+                    this.log(`❌ Microphone permission denied: ${error.message}`, 'error');
+                    this.testResults.push({ test: 'Microphone Permission', result: 'FAIL', error: error.message });
+                }
+                
+                this.generateDebugData();
+            }
+            
+            async testRecording() {
+                if (this.isRecording) return;
+                
+                this.log('🔴 Starting recording test...', 'info');
+                
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({
+                        audio: {
+                            echoCancellation: true,
+                            noiseSuppression: true,
+                            autoGainControl: true,
+                            channelCount: 1
+                        }
+                    });
+                    
+                    // Try to find a supported format
+                    const formats = this.getAudioFormats().filter(f => f.supported);
+                    if (formats.length === 0) {
+                        throw new Error('No supported audio formats found');
+                    }
+                    
+                    const bestFormat = formats[0].format;
+                    this.log(`🎵 Using format: ${bestFormat}`, 'info');
+                    
+                    this.audioChunks = [];
+                    
+                    try {
+                        this.mediaRecorder = new MediaRecorder(stream, { mimeType: bestFormat });
+                        this.log('✅ MediaRecorder created successfully', 'success');
+                    } catch (e) {
+                        this.log(`⚠️ Failed with specific format, trying default: ${e.message}`, 'warning');
+                        this.mediaRecorder = new MediaRecorder(stream);
+                        this.log('✅ MediaRecorder created with default format', 'success');
+                    }
+                    
+                    this.mediaRecorder.ondataavailable = (event) => {
+                        if (event.data.size > 0) {
+                            this.audioChunks.push(event.data);
+                            this.log(`📦 Audio chunk received: ${event.data.size} bytes`, 'info');
+                        }
+                    };
+                    
+                    this.mediaRecorder.onstop = () => {
+                        stream.getTracks().forEach(track => track.stop());
+                        this.processTestAudio();
+                    };
+                    
+                    this.mediaRecorder.onerror = (event) => {
+                        this.log(`❌ MediaRecorder error: ${event.error}`, 'error');
+                        this.testResults.push({ test: 'Recording', result: 'FAIL', error: event.error });
+                    };
+                    
+                    this.mediaRecorder.start(1000); // 1 second chunks
+                    this.isRecording = true;
+                    
+                    document.getElementById('recordTest').classList.add('hidden');
+                    document.getElementById('stopTest').classList.remove('hidden');
+                    document.getElementById('stopTest').classList.add('recording');
+                    
+                    this.log('🎤 Recording started - speak for 3-5 seconds then stop', 'success');
+                    
+                } catch (error) {
+                    this.log(`❌ Recording test failed: ${error.message}`, 'error');
+                    this.testResults.push({ test: 'Recording', result: 'FAIL', error: error.message });
+                }
+                
+                this.generateDebugData();
+            }
+            
+            stopRecording() {
+                if (!this.isRecording || !this.mediaRecorder) return;
+                
+                this.mediaRecorder.stop();
+                this.isRecording = false;
+                
+                document.getElementById('recordTest').classList.remove('hidden');
+                document.getElementById('stopTest').classList.add('hidden');
+                document.getElementById('stopTest').classList.remove('recording');
+                
+                this.log('⏹️ Recording stopped', 'info');
+            }
+            
+            processTestAudio() {
+                if (this.audioChunks.length === 0) {
+                    this.log('❌ No audio data recorded', 'error');
+                    this.testResults.push({ test: 'Audio Processing', result: 'FAIL', error: 'No audio data' });
+                    return;
+                }
+                
+                const audioBlob = new Blob(this.audioChunks, { 
+                    type: this.audioChunks[0]?.type || 'audio/webm' 
+                });
+                
+                this.log(`✅ Audio processed: ${audioBlob.size} bytes, type: ${audioBlob.type}`, 'success');
+                this.testResults.push({ 
+                    test: 'Audio Processing', 
+                    result: 'PASS', 
+                    details: { size: audioBlob.size, type: audioBlob.type }
+                });
+                
+                // Test WAV conversion
+                this.testWavConversion(audioBlob);
+                
+                this.generateDebugData();
+            }
+            
+            async testWavConversion(audioBlob) {
+                this.log('🔄 Testing WAV conversion...', 'info');
+                
+                try {
+                    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                    if (!AudioContextClass) {
+                        throw new Error('AudioContext not supported');
+                    }
+                    
+                    const audioContext = new AudioContextClass();
+                    const arrayBuffer = await audioBlob.arrayBuffer();
+                    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+                    
+                    this.log('✅ WAV conversion test passed', 'success');
+                    this.testResults.push({ test: 'WAV Conversion', result: 'PASS' });
+                    
+                    audioContext.close();
+                    
+                } catch (error) {
+                    this.log(`❌ WAV conversion failed: ${error.message}`, 'error');
+                    this.testResults.push({ test: 'WAV Conversion', result: 'FAIL', error: error.message });
+                }
+            }
+            
+            async testAllFormats() {
+                this.log('🔍 Testing all audio formats...', 'info');
+                
+                const formats = this.getAudioFormats();
+                const supportedFormats = formats.filter(f => f.supported);
+                
+                if (supportedFormats.length === 0) {
+                    this.log('❌ No supported formats found', 'error');
+                    return;
+                }
+                
+                for (const format of supportedFormats) {
+                    try {
+                        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                        const recorder = new MediaRecorder(stream, { mimeType: format.format });
+                        
+                        this.log(`✅ ${format.format} - MediaRecorder creation successful`, 'success');
+                        
+                        stream.getTracks().forEach(track => track.stop());
+                        
+                    } catch (error) {
+                        this.log(`❌ ${format.format} - Failed: ${error.message}`, 'error');
+                    }
+                }
+                
+                this.generateDebugData();
+            }
+            
+            log(message, type = 'info') {
+                const logContainer = document.getElementById('testLog');
+                const entry = document.createElement('div');
+                entry.className = `log-entry ${type}`;
+                entry.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+                logContainer.appendChild(entry);
+                logContainer.scrollTop = logContainer.scrollHeight;
+            }
+            
+            copyLog() {
+                const logEntries = document.querySelectorAll('.log-entry');
+                const logText = Array.from(logEntries).map(entry => entry.textContent).join('\n');
+                this.copyToClipboard(logText);
+                this.log('📋 Log copied to clipboard', 'success');
+            }
+            
+            clearLog() {
+                const logContainer = document.getElementById('testLog');
+                logContainer.innerHTML = '<div class="log-entry">Log cleared...</div>';
+            }
+            
+            generateDebugData() {
+                const debugData = {
+                    timestamp: new Date().toISOString(),
+                    device: this.getDeviceInfo(),
+                    browser: this.getBrowserSupport(),
+                    audioFormats: this.getAudioFormats(),
+                    testResults: this.testResults
+                };
+                
+                document.getElementById('debugData').value = JSON.stringify(debugData, null, 2);
+            }
+            
+            copyDebugData() {
+                const debugData = document.getElementById('debugData').value;
+                this.copyToClipboard(debugData);
+                this.log('📋 Debug data copied to clipboard', 'success');
+            }
+            
+            copyToClipboard(text) {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(text);
+                } else {
+                    // Fallback for older browsers
+                    const textArea = document.createElement('textarea');
+                    textArea.value = text;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                }
+            }
+        }
+        
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new MobileDebugger();
+        });
+    </script>
+</body>
+</html> 

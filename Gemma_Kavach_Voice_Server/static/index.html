@@ -106,6 +106,32 @@
                                 </div>
                             </div>
                         </div>
+                        
+                        <!-- Mobile-specific notice -->
+                        <div class="mobile-notice" id="mobileNotice" style="display: none;">
+                            <div class="notice-content">
+                                <i class="fas fa-mobile-alt"></i>
+                                <div class="notice-text">
+                                    <strong>📱 Mobile Device Detected</strong><br>
+                                    <span>Make sure to allow microphone access when prompted. Audio recording is optimized for your device.</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- iOS-specific notice -->
+                        <div class="mobile-notice" id="iosNotice" style="display: none;">
+                            <div class="notice-content">
+                                <i class="fas fa-volume-up"></i>
+                                <div class="notice-text">
+                                    <strong>🍎 iPhone/iPad Detected</strong><br>
+                                    <span>Make sure your phone is not on silent mode and volume is up. Tap the play button to hear audio responses.</span>
+                                    <br><br>
+                                    <button id="iosAudioTest" class="test-button" style="background: #007AFF; color: white; border: none; padding: 8px 16px; border-radius: 8px; margin-top: 10px;">
+                                        🔊 Test Audio
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -1125,3 +1125,100 @@ body::after {
     background: linear-gradient(45deg, #ff00ff, #ffff00);
     box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
 }
+
+/* Audio Playback Buttons */
+.audio-playback-button, .ios-play-button {
+    background: linear-gradient(135deg, #00ff88 0%, #00ffff 100%);
+    border: none;
+    padding: 15px 25px;
+    border-radius: 25px;
+    color: #000;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    margin: 15px 0;
+    width: 100%;
+    max-width: 300px;
+    box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.audio-playback-button:hover, .ios-play-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 255, 136, 0.4);
+    background: linear-gradient(135deg, #00ffaa 0%, #00ffff 100%);
+}
+
+.audio-playback-button:active, .ios-play-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 10px rgba(0, 255, 136, 0.3);
+}
+
+.audio-playback-button:disabled, .ios-play-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.audio-playback-button::before, .ios-play-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s;
+}
+
+.audio-playback-button:hover::before, .ios-play-button:hover::before {
+    left: 100%;
+}
+
+.audio-playback-button i, .ios-play-button i {
+    margin-right: 8px;
+    font-size: 1.1em;
+}
+
+/* Special styling for iOS play button */
+.ios-play-button {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%);
+    border: 2px solid #ff4757;
+    animation: iosButtonPulse 2s ease-in-out infinite;
+}
+
+.ios-play-button:hover {
+    background: linear-gradient(135deg, #ff5252 0%, #ff7979 100%);
+    border-color: #ff3742;
+}
+
+@keyframes iosButtonPulse {
+    0%, 100% { 
+        box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+    }
+    50% { 
+        box-shadow: 0 4px 25px rgba(255, 107, 107, 0.5);
+    }
+}
+
+/* Mobile responsive audio buttons */
+@media (max-width: 768px) {
+    .audio-playback-button, .ios-play-button {
+        padding: 12px 20px;
+        font-size: 0.9rem;
+        margin: 10px 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .audio-playback-button, .ios-play-button {
+        padding: 10px 15px;
+        font-size: 0.8rem;
+        margin: 8px 0;
+    }
+}
