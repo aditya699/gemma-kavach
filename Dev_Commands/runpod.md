@@ -21,3 +21,9 @@
 10.cd workspace && source venv/bin/activate && cd Gemma_Kavach_Voice_Server && uvicorn main:app --host 0.0.0.0 --port 7860 --reload
 
 11.Force delete command in rm -rf Gemma_Kavach_Voice_Server
+
+12.run this command: nohup python job.py >> train.log 2>&1 &
+
+13.ps aux | grep job.py  (check if the job is running)
+
+14.tail -f train.log (check actual logs)
