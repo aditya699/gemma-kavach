@@ -18,8 +18,10 @@ torch.backends.cudnn.allow_tf32 = False
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from routes import router
 from utils import load_model
+from pathlib import Path
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -37,8 +39,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include routes
+# Include API routes
 app.include_router(router)
+
+# Setup static files serving
+BASE_DIR = Path(__file__).resolve().parent
+STATIC_DIR = BASE_DIR / "static"
+
+# Mount static files
+app.mount(
+    "/",
+    StaticFiles(directory=STATIC_DIR, html=True),
+    name="static"
+)
 
 @app.on_event("startup")
 async def startup_event():

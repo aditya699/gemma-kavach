@@ -469,18 +469,20 @@ body::before {
     100% { filter: brightness(1.5); }
 }
 
-/* FIXED Risk Widget - No Overlap */
+/* Enhanced Risk Widget - Optimized Layout */
 .risk-widget {
     display: flex;
     flex-direction: column;
     align-items: center;
+    position: relative;
 }
 
 .risk-meter {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-bottom: 20px; /* FIXED: Add space below circle */
+    margin-bottom: 24px; /* Enhanced: More space below circle */
+    position: relative;
 }
 
 .risk-circle {

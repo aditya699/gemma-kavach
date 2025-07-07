@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemma Kavach - Emergency Classification System</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 100 100" width="40" height="40">
+                        <circle cx="50" cy="50" r="45" fill="none" stroke="url(#gradient)" stroke-width="8"/>
+                        <circle cx="30" cy="30" r="8" fill="#4F46E5"/>
+                        <circle cx="70" cy="30" r="8" fill="#7C3AED"/>
+                        <circle cx="30" cy="70" r="8" fill="#06B6D4"/>
+                        <circle cx="70" cy="70" r="8" fill="#10B981"/>
+                        <circle cx="50" cy="50" r="6" fill="#F59E0B"/>
+                        <defs>
+                            <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#4F46E5"/>
+                                <stop offset="100%" style="stop-color:#06B6D4"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <div class="logo-text">
+                    <h1>Gemma Kavach</h1>
+                    <span class="subtitle">Emergency Classification System</span>
+                </div>
+            </div>
+            <div class="status-indicator" id="connectionStatus">
+                <i class="fas fa-circle"></i>
+                <span>Connecting...</span>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Left Panel - Classification Interface -->
+            <div class="classification-panel">
+                <div class="input-section">
+                    <h2><i class="fas fa-exclamation-triangle"></i> Emergency Classification</h2>
+                    <p class="description">Enter emergency text to classify the situation type. The AI will categorize it into predefined emergency types.</p>
+                    
+                    <div class="input-container">
+                        <label for="emergencyText">Emergency Description:</label>
+                        <textarea 
+                            id="emergencyText" 
+                            placeholder="Describe the emergency situation... (e.g., 'A child has gone missing near the food stalls' or 'There's a small fire in the trash bin')"
+                            rows="4"
+                        ></textarea>
+                        <div class="char-counter">
+                            <span id="charCount">0</span> / 500 characters
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button id="classifyBtn" class="btn btn-primary">
+                            <i class="fas fa-brain"></i>
+                            Classify Emergency
+                        </button>
+                        <button id="clearBtn" class="btn btn-secondary">
+                            <i class="fas fa-eraser"></i>
+                            Clear Text
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Quick Examples -->
+                <div class="examples-section">
+                    <h3><i class="fas fa-lightbulb"></i> Quick Examples</h3>
+                    <div class="examples-grid">
+                        <button class="example-btn" data-text="A child is missing near the main stage area">
+                            <i class="fas fa-child"></i>
+                            Child Lost
+                        </button>
+                        <button class="example-btn" data-text="People are running and pushing in panic near the exit">
+                            <i class="fas fa-running"></i>
+                            Crowd Panic
+                        </button>
+                        <button class="example-btn" data-text="Someone needs medical assistance, they collapsed">
+                            <i class="fas fa-first-aid"></i>
+                            Medical Help
+                        </button>
+                        <button class="example-btn" data-text="There's a small fire in the food court trash bin">
+                            <i class="fas fa-fire"></i>
+                            Small Fire
+                        </button>
+                        <button class="example-btn" data-text="I lost my wallet and phone near the entrance">
+                            <i class="fas fa-wallet"></i>
+                            Lost Item
+                        </button>
+                        <button class="example-btn" data-text="Need a translator for someone who doesn't speak the local language">
+                            <i class="fas fa-language"></i>
+                            Need Interpreter
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel - Results and Analytics -->
+            <div class="results-panel">
+                <!-- Classification Result -->
+                <div class="widget result-widget">
+                    <h3><i class="fas fa-clipboard-check"></i> Classification Result</h3>
+                    <div class="result-display" id="resultDisplay">
+                        <div class="result-placeholder">
+                            <i class="fas fa-robot"></i>
+                            <p>Enter emergency text and click "Classify Emergency" to see the AI classification result.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Model Information -->
+                <div class="widget model-widget">
+                    <h3><i class="fas fa-microchip"></i> Model Information</h3>
+                    <div class="model-info" id="modelInfo">
+                        <div class="info-row">
+                            <span class="info-label">Model Status:</span>
+                            <span class="info-value" id="modelStatus">Loading...</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Device:</span>
+                            <span class="info-value" id="modelDevice">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Categories:</span>
+                            <span class="info-value" id="categoriesCount">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Supported Categories -->
+                <div class="widget categories-widget">
+                    <h3><i class="fas fa-tags"></i> Supported Categories</h3>
+                    <div class="categories-grid" id="categoriesGrid">
+                        <div class="category-item">
+                            <i class="fas fa-child"></i>
+                            <span>Child Lost</span>
+                        </div>
+                        <div class="category-item">
+                            <i class="fas fa-running"></i>
+                            <span>Crowd Panic</span>
+                        </div>
+                        <div class="category-item">
+                            <i class="fas fa-first-aid"></i>
+                            <span>Medical Help</span>
+                        </div>
+                        <div class="category-item">
+                            <i class="fas fa-fire"></i>
+                            <span>Small Fire</span>
+                        </div>
+                        <div class="category-item">
+                            <i class="fas fa-wallet"></i>
+                            <span>Lost Item</span>
+                        </div>
+                        <div class="category-item">
+                            <i class="fas fa-language"></i>
+                            <span>Need Interpreter</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Classifications -->
+                <div class="widget history-widget">
+                    <h3><i class="fas fa-history"></i> Recent Classifications</h3>
+                    <div class="classification-history" id="classificationHistory">
+                        <div class="history-placeholder">
+                            <p>No recent classifications yet.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Stats -->
+                <div class="widget stats-widget">
+                    <h3><i class="fas fa-chart-bar"></i> Session Statistics</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value" id="totalClassifications">0</div>
+                            <div class="stat-label">Classifications</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="avgResponseTime">0ms</div>
+                            <div class="stat-label">Avg Response</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="successRate">100%</div>
+                            <div class="stat-label">Success Rate</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="sessionTime">00:00</div>
+                            <div class="stat-label">Session Time</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Modal -->
+    <div class="modal" id="loadingModal">
+        <div class="modal-content">
+            <div class="spinner-container">
+                <div class="ai-spinner">
+                    <div class="spinner-ring"></div>
+                    <div class="spinner-center">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                </div>
+            </div>
+            <p>Analyzing emergency text...</p>
+            <div class="analysis-progress">
+                <div class="progress-item">
+                    <span class="progress-icon">🤖</span>
+                    <span class="progress-text">AI Processing</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="modal" id="successModal">
+        <div class="modal-content success">
+            <div class="success-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h3>Classification Complete!</h3>
+            <p id="successMessage">Emergency has been successfully classified.</p>
+            <button class="btn btn-primary" onclick="closeSuccessModal()">
+                <i class="fas fa-thumbs-up"></i>
+                Continue
+            </button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
