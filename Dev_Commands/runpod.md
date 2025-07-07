@@ -27,3 +27,5 @@
 13.ps aux | grep job.py  (check if the job is running)
 
 14.tail -f train.log (check actual logs)
+
+15.cd workspace && python3 -m venv venv && source venv/bin/activate && pip install -r requirements.txt

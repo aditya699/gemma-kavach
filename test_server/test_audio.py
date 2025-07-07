@@ -1,7 +1,7 @@
 import requests
 import base64
 
-SERVER_URL = "https://3gdf7gz3vpdp0z-8000.proxy.runpod.net/"
+SERVER_URL = "https://l63p034w6181jc-8000.proxy.runpod.net/"
 
 def test_audio_with_custom_prompt():
     """Test audio processing with custom prompt"""

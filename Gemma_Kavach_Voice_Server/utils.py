@@ -9,7 +9,7 @@ import tempfile
 import json
 
 # Configuration
-SERVER_URL = "https://wgbursvubfm2u5-8000.proxy.runpod.net/"
+SERVER_URL = "https://l63p034w6181jc-8000.proxy.runpod.net/"
 TEST_MODE = False
 GOOGLE_TTS_API_KEY = os.getenv("GOOGLE_TEXT_TO_SPEECH")
 

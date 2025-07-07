@@ -1,6 +1,6 @@
 # Unsloth and Core ML (Unsloth will handle transformers, torch versions)
-unsloth[colab-new] @ git+https://github.com/unslothai/unsloth.git
-
+# unsloth[colab-new] @ git+https://github.com/unslothai/unsloth.git
+unsloth
 # Hugging Face (compatible versions will be installed by unsloth)
 huggingface_hub
 accelerate
@@ -23,5 +23,5 @@ google-cloud-storage
 python-dotenv
 aiohttp
 soundfile
-ipykernel # for jupyter notebook
+# ipykernel # for jupyter notebook
 google-cloud-texttospeech
