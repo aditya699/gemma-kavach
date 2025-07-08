@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emergency Reporting System - Gemma Kavach</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="logo-text">
+                    <h1>Gemma Kavach</h1>
+                    <span class="subtitle">Emergency Chat System</span>
+                </div>
+            </div>
+            <div class="status-indicator" id="connectionStatus">
+                <i class="fas fa-circle"></i>
+                <span>Connecting...</span>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Emergency Report Form -->
+            <div class="report-panel">
+                <div class="panel-header">
+                    <h2><i class="fas fa-exclamation-triangle"></i> Emergency Report</h2>
+                    <p>Submit emergency situation for AI analysis and immediate response</p>
+                </div>
+
+                <form id="emergencyForm" class="emergency-form">
+                    <!-- Location Input -->
+                    <div class="input-group">
+                        <label for="locationInput">
+                            <i class="fas fa-map-marker-alt"></i>
+                            Location
+                        </label>
+                        <input 
+                            type="text" 
+                            id="locationInput" 
+                            name="location"
+                            placeholder="Enter emergency location (e.g., Sector 17, Plaza, Building A)" 
+                            required
+                        >
+                        <div class="input-glow"></div>
+                    </div>
+
+                    <!-- Emergency Message -->
+                    <div class="input-group">
+                        <label for="messageInput">
+                            <i class="fas fa-comment-alt"></i>
+                            Emergency Description
+                        </label>
+                        <textarea 
+                            id="messageInput" 
+                            name="message"
+                            placeholder="Describe the emergency situation in detail (Hindi/English both supported)"
+                            rows="4"
+                            required
+                        ></textarea>
+                        <div class="input-glow"></div>
+                        <div class="helper-text">
+                            <i class="fas fa-info-circle"></i>
+                            Examples: "Bacha kho gaya hai", "Medical emergency", "Fire in building", "Crowd panic"
+                        </div>
+                    </div>
+
+                    <!-- Image Upload -->
+                    <div class="input-group">
+                        <label for="imageInput">
+                            <i class="fas fa-camera"></i>
+                            Emergency Photo
+                        </label>
+                        <div class="file-upload-container">
+                            <input 
+                                type="file" 
+                                id="imageInput" 
+                                name="image"
+                                accept="image/*"
+                                capture="environment"
+                                required
+                            >
+                            <div class="file-upload-display" id="fileUploadDisplay">
+                                <div class="upload-placeholder">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <span>Click to upload or drag image here</span>
+                                    <small>Supports: JPG, PNG, WebP (Max: 10MB)</small>
+                                </div>
+                                <div class="image-preview" id="imagePreview" style="display: none;">
+                                    <img id="previewImg" src="" alt="Preview">
+                                    <div class="image-overlay">
+                                        <button type="button" class="remove-image" id="removeImage">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contact Information -->
+                    <div class="input-group">
+                        <label for="contactInput">
+                            <i class="fas fa-phone"></i>
+                            Contact Number (Optional)
+                        </label>
+                        <input 
+                            type="tel" 
+                            id="contactInput" 
+                            name="contact"
+                            placeholder="Your contact number for follow-up"
+                        >
+                        <div class="input-glow"></div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="submit-section">
+                        <button type="submit" class="btn btn-emergency" id="submitBtn">
+                            <i class="fas fa-paper-plane"></i>
+                            <span>Submit Emergency Report</span>
+                            <div class="btn-glow"></div>
+                        </button>
+                        <div class="submit-info">
+                            <i class="fas fa-shield-alt"></i>
+                            Report will be analyzed by AI and forwarded to emergency response team
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Results Panel -->
+            <div class="results-panel" id="resultsPanel" style="display: none;">
+                <div class="panel-header">
+                    <h2><i class="fas fa-brain"></i> AI Analysis Results</h2>
+                    <p>Emergency classification and response status</p>
+                </div>
+
+                <div class="analysis-results">
+                    <!-- Classification Result -->
+                    <div class="result-item classification-result">
+                        <div class="result-header">
+                            <i class="fas fa-tags"></i>
+                            <span>Emergency Classification</span>
+                        </div>
+                        <div class="result-value" id="classificationResult">
+                            <span class="category-badge" id="categoryBadge">Analyzing...</span>
+                        </div>
+                    </div>
+
+                    <!-- Response Status -->
+                    <div class="result-item status-result">
+                        <div class="result-header">
+                            <i class="fas fa-clock"></i>
+                            <span>Response Status</span>
+                        </div>
+                        <div class="result-value" id="responseStatus">
+                            <div class="status-steps">
+                                <div class="step active" id="step1">
+                                    <i class="fas fa-check"></i>
+                                    <span>Report Received</span>
+                                </div>
+                                <div class="step" id="step2">
+                                    <i class="fas fa-brain"></i>
+                                    <span>AI Analysis</span>
+                                </div>
+                                <div class="step" id="step3">
+                                    <i class="fas fa-paper-plane"></i>
+                                    <span>Alert Sent</span>
+                                </div>
+                                <div class="step" id="step4">
+                                    <i class="fas fa-users"></i>
+                                    <span>Team Notified</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Report Details -->
+                    <div class="result-item details-result">
+                        <div class="result-header">
+                            <i class="fas fa-info-circle"></i>
+                            <span>Report Details</span>
+                        </div>
+                        <div class="result-value">
+                            <div class="details-grid">
+                                <div class="detail-item">
+                                    <span class="detail-label">Location:</span>
+                                    <span class="detail-value" id="reportLocation">-</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Timestamp:</span>
+                                    <span class="detail-value" id="reportTimestamp">-</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Report ID:</span>
+                                    <span class="detail-value" id="reportId">-</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Analysis Time:</span>
+                                    <span class="detail-value" id="analysisTime">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <button type="button" class="btn btn-secondary" id="newReportBtn">
+                        <i class="fas fa-plus"></i>
+                        Submit New Report
+                    </button>
+                    <button type="button" class="btn btn-info" id="trackStatusBtn">
+                        <i class="fas fa-search"></i>
+                        Track Response Status
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Modal -->
+    <div class="modal" id="loadingModal">
+        <div class="modal-content">
+            <div class="spinner-container">
+                <div class="dual-spinner">
+                    <div class="spinner-ring emergency-ring"></div>
+                    <div class="spinner-ring analysis-ring"></div>
+                </div>
+            </div>
+            <p id="loadingText">Processing emergency report...</p>
+            <div class="loading-steps">
+                <div class="loading-step active">
+                    <span class="step-icon">📡</span>
+                    <span class="step-text">Uploading report</span>
+                </div>
+                <div class="loading-step">
+                    <span class="step-icon">🧠</span>
+                    <span class="step-text">AI analysis</span>
+                </div>
+                <div class="loading-step">
+                    <span class="step-icon">📧</span>
+                    <span class="step-text">Sending alert</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success/Error Toast -->
+    <div class="toast" id="toast">
+        <div class="toast-content">
+            <i class="toast-icon"></i>
+            <span class="toast-message"></span>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
