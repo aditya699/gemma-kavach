@@ -518,6 +518,10 @@ pkill -f uvicorn
 - **FastAPI** community for excellent web framework
 - **Hugging Face** for model hosting and transformers
 
+## 📚 Citation
+
+Glenn Cameron, Omar Sanseviero, Gus Martins, Ian Ballantyne, Kat Black, Mark Sherwood, Milen Ferev, Ronghui Zhu, Nilay Chauhan, Pulkit Bhuwalka, Emily Kosa, and Addison Howard. Google - The Gemma 3n Impact Challenge. https://kaggle.com/competitions/google-gemma-3n-hackathon, 2025. Kaggle.
+
 ## 📈 Roadmap
 
 ### Upcoming Features
