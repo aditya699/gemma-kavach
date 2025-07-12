@@ -33,7 +33,7 @@ def get_model_and_processor():
         model_name="unsloth/gemma-3n-E4B-it",
         dtype=None,  # Auto detection (tutorial setting)
         max_seq_length=1024,
-        load_in_4bit=False,  # Tutorial setting (works with multimodal)
+        load_in_4bit=True,  # Tutorial setting (works with multimodal)
         full_finetuning=False,
         trust_remote_code=True,
     )

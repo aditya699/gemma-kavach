@@ -119,3 +119,8 @@ journalctl -u your-service-name -f
 - Monitor logs regularly for debugging
 - Ensure proper port configurations to avoid conflicts
 - Use `nohup` for long-running background processes
+
+tail -f voice_server.log
+tail -f vision_server.log
+tail -f gemma_server.log
+tail -f main_app.log
