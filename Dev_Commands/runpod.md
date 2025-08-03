@@ -2,8 +2,7 @@
 
 ## Environment Setup
 
-### Initial Setup
-```bash
+### Initial Setup```bash
 # Create virtual environment
 python3 -m venv venv
 
